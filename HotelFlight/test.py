@@ -17,3 +17,5 @@ cursor.execute("select distinct HB.Checkin_Date,HB.Checkout_Date,B.User_id,U.fir
                "HR.Hotel_id=1 order by HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay")
 result = namedtuplefetchall(cursor)
 print(result)
+
+print('commit')
