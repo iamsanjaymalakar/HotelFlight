@@ -20,7 +20,7 @@ class Hotel(models.Model):
     Hotel_Name = models.CharField(max_length=200)
     Hotel_Location = models.CharField(max_length=500)
     Hotel_Country = models.CharField(max_length=500, null=True)
-    TotalSentMoney = models.DecimalField(max_digits=20, decimal_places=2)
+    TotalSentMoney = models.FloatField()
     Percentage = models.FloatField()
     CompanyAdmin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     Description = models.TextField(null=True)
@@ -34,8 +34,8 @@ class Hotel(models.Model):
 
 
 class Room(models.Model):
-    SingleBedCount = models.DecimalField(max_digits=1, decimal_places=0)
-    DoubleBedCount = models.DecimalField(max_digits=1, decimal_places=0)
+    SingleBedCount = models.IntegerField()
+    DoubleBedCount = models.IntegerField()
     RoomType = models.CharField(max_length=100)
     AirConditioner = models.BooleanField()
 
