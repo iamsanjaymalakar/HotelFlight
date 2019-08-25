@@ -144,7 +144,7 @@ class Cancellation_Log(models.Model):
 
 
 class BookingLog(models.Model):
-    User = models.ForeignKey(User, on_delete=models.CASCADE)
+    Admin = models.ForeignKey(User, on_delete=models.CASCADE)
     Booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     # 0 admin, 1 user
     Actor = models.BooleanField(default=False)
