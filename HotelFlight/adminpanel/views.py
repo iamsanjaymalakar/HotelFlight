@@ -49,12 +49,12 @@ def hoteladminnotifications(request):
     cursor.execute("select distinct HB.Checkin_Date,HB.Checkout_Date,H.Hotel_Name,B.User_id,B.MoneyToPay,"
                    "(B.MoneyToPay-B.MoneyToRefund) as 'Paid',B.MoneyToRefund as 'Pending',HR.Room_id,HB.TotalRooms,"
                    "R.RoomType,R.SingleBedCount,R.DoubleBedCount,B.id as 'BookingID',H.CompanyAdmin_id as 'AdminID',"
-                   "H.Address,H.Hotel_Location,H.Hotel_Country,U.first_name,U.last_name,CL.notified "
+                   "H.Address,H.Hotel_Location,H.Hotel_Country,U.first_name,U.last_name,BL.notified "
                    "from database_hotel_booking HB join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join "
                    "database_booking B on(HB.Booking_id=B.id) join database_room R on (R.id=HR.Room_id) join "
-                   "database_hotel H on(H.id=HR.Hotel_id) join database_cancellation_log CL on (B.id=CL.Booking_id) "
+                   "database_hotel H on(H.id=HR.Hotel_id) join database_bookinglog BL on (B.id=BL.Booking_id) "
                    "join auth_user U on(U.id=B.User_id)"
-                   "where HB.Checkin_Date>=CURRENT_DATE and CL.Admin_id=%s "
+                   "where HB.Checkin_Date>=CURRENT_DATE and BL.Admin_id=%s and BL.Actor=1"
                    " and DATETIME(B.DateOfBooking,'+10 day')>=date('now') order by HB.Checkin_Date,"
                    "HB.Checkout_Date,B.MoneyToPay", [request.user.id])
     data = namedtuplefetchall(cursor)
@@ -68,11 +68,11 @@ def hoteladminbookings(request):
     cursor = connection.cursor()
     cursor.execute(
         "select distinct HB.Checkin_Date,HB.Checkout_Date,B.User_id,U.first_name,U.last_name,U.email,P.Phone,"
-        "P.Address,B.MoneyToPay,(B.MoneyToPay-B.MoneyToRefund) as 'Paid',B.MoneyToRefund as 'Pending',"
+        "P.Address,B.MoneyToPay,B.PaidMoney,B.MoneyToRefund,B.MoneyToPay+B.PaidMoney as 'Price',B.Status,B.id as 'Bid',"
         "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
         "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
         "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
-        "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s and B.isCancelled=0 "
+        "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s "
         "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
     data = namedtuplefetchall(cursor)
     return render(request, "adminpanel/hotelAdminBookings.html", {'data': data})
@@ -80,21 +80,65 @@ def hoteladminbookings(request):
 
 def hoteladminbookingstoday(request):
     hotel = Hotel.objects.get(CompanyAdmin=request.user.id)
-    date = request.GET.get("date", "CURRENT_DATE")
-    print(date)
+    date = request.GET.get("date", "default")
     cursor = connection.cursor()
-    cursor.execute(
-        "select distinct HB.Checkin_Date,HB.Checkout_Date,B.User_id,U.first_name,U.last_name,U.email,P.Phone,"
-        "P.Address,B.MoneyToPay,(B.MoneyToPay-B.MoneyToRefund) as 'Paid',B.MoneyToRefund as 'Pending',"
-        "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
-        "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
-        "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
-        "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s and B.isCancelled=0 "
-        "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
+    if date == "default":
+        cursor.execute(
+            "select distinct HB.Checkin_Date,HB.Checkout_Date,B.User_id,U.first_name,U.last_name,U.email,P.Phone,"
+            "P.Address,B.MoneyToPay,B.PaidMoney,B.MoneyToRefund,B.MoneyToPay+B.PaidMoney as 'Price',B.Status,B.id as 'Bid',"
+            "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
+            "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
+            "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
+            "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s "
+            "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
+    else:
+        cursor.execute(
+            "select distinct HB.Checkin_Date,HB.Checkout_Date,B.User_id,U.first_name,U.last_name,U.email,P.Phone,"
+            "P.Address,B.MoneyToPay,B.PaidMoney,B.MoneyToRefund,B.MoneyToPay+B.PaidMoney as 'Price',B.Status,B.id as 'Bid',"
+            "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
+            "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
+            "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
+            "on (R.id=HR.Room_id) where HB.Checkin_Date>=%s and HR.Hotel_id=%s "
+            "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [date, hotel.id])
     data = namedtuplefetchall(cursor)
-    for dd in data:
-        print(dd)
     return render(request, "adminpanel/hotelAdminBookingsToday.html", {'data': data})
+
+
+def hoteladminbookingconfirm(request):
+    bookingID = request.GET.get('bid', 1)
+    bookingObject = Booking.objects.get(pk=int(bookingID))
+    # update status to confirmed
+    bookingObject.Status = 1
+    bookingObject.save()
+    # add notification for user
+    try:
+        logObject = BookingLog.objects.get(Actor=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        logObject.Message = ''
+        logObject.notified = 0
+        logObject.save()
+    except BookingLog.DoesNotExist:
+        logObject = BookingLog(Actor=0, Message='', notified=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        logObject.save()
+    return HttpResponseRedirect('adminHotelBookingsToday')
+
+
+def hoteladminbookingcancel(request):
+    bookingID = request.GET.get('bid', 1)
+    bookingObject = Booking.objects.get(pk=int(bookingID))
+    # update status to cancelled
+    bookingObject.Status = 2
+    bookingObject.save()
+    # add notification for user
+    try:
+        logObject = BookingLog.objects.get(Actor=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        # todo
+        logObject.Message = ''
+        logObject.notified = 0
+        logObject.save()
+    except BookingLog.DoesNotExist:
+        logObject = BookingLog(Actor=0, Message='', notified=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        logObject.save()
+    return HttpResponseRedirect('adminHotelBookingsToday')
 
 
 def hoteladminaddroom(request):
@@ -215,7 +259,7 @@ def hoteladmincalender(request):
         "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
         "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
         "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
-        "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s and B.isCancelled=0 "
+        "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s and B.Status<>2 "
         "order by HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
     data = namedtuplefetchall(cursor)
     for datum in data:

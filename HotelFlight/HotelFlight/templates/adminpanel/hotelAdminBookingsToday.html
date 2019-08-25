@@ -91,10 +91,10 @@
                 </div>
                 <div class="col-lg-10" style="padding-right: 35px;">
 
-                   <form action="{% url 'hotelAdminBookingsToday' %}">
-                       <input id="datep" name="date" width="250">
-                       <button>Submit</button>
-                   </form>
+                    <form action="{% url 'hotelAdminBookingsToday' %}">
+                        <input id="datep" name="date" width="250">
+                        <button>Submit</button>
+                    </form>
 
 
                     <div class="rooms" style="margin-top: 20px;">
@@ -117,11 +117,20 @@
                                 <th>
                                     No of Rooms
                                 </th>
+                                <th>
+                                    Price
+                                </th>
                                 <th width="13%">
                                     Advanced Payment
                                 </th>
                                 <th width="13%">
                                     Pending Payment
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th>
+                                    Actions
                                 </th>
                             </tr>
                             {% for datum in data %}
@@ -148,10 +157,35 @@
                                         {{ datum.TotalRooms }}
                                     </td>
                                     <td>
-                                        {{ datum.Paid }}৳
+                                        {{ datum.Price }}
                                     </td>
                                     <td>
-                                        {{ datum.Pending }}৳
+                                        {{ datum.PaidMoney }}৳
+                                    </td>
+                                    <td>
+                                        {{ datum.MoneyToPay }}৳
+                                    </td>
+                                    <td>
+                                        {% with datum.Status as status %}
+                                            {% if status == 0 %}
+                                                Booked
+                                            {% elif status == 1 %}
+                                                Confirmed
+                                            {% else %}
+                                                Cancelled
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+                                            <option value="">Select...</option>
+                                            <option value="{% url 'hotelAdminBookingConfirm' %}?bid={{ datum.Bid }}">
+                                                Confirm
+                                            </option>
+                                            <option value="{% url 'hotelAdminBookingCancel' %}?bid={{ datum.Bid }}">
+                                                Cancel
+                                            </option>
+                                        </select>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -165,15 +199,15 @@
 {% endblock content %}
 
 {% block jscript %}
-<script>
-    let today = new Date().getFullYear() + "-" + ("0"+(new Date().getMonth()+1)).slice(-2) + "-" +
-        ("0" + new Date().getDate()).slice(-2);
-    $('#datep').datepicker({
-        uiLibrary: 'bootstrap4',
-        value: today,
-        minDate: today,
-        format: 'yyyy-mm-dd',
-        size: 'small'
-    });
-</script>
+    <script>
+        let today = new Date().getFullYear() + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" +
+            ("0" + new Date().getDate()).slice(-2);
+        $('#datep').datepicker({
+            uiLibrary: 'bootstrap4',
+            value: today,
+            minDate: today,
+            format: 'yyyy-mm-dd',
+            size: 'small'
+        });
+    </script>
 {% endblock %}

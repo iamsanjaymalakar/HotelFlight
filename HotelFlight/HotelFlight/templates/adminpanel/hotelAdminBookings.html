@@ -80,6 +80,9 @@
                             <li>
                                 <a href="{% url 'hotelAdminAddRoom' %}">Add Rooms</a>
                             </li>
+                            <li>
+                                <a href="{% url 'hotelAdminBookingsToday' %}">Today's Bookings</a>
+                            </li>
                             <li class="active">
                                 <a href="{% url 'hotelAdminBookings' %}">View Bookings</a>
                             </li>
@@ -110,11 +113,17 @@
                                 <th>
                                     No of Rooms
                                 </th>
+                                <th>
+                                    Price
+                                </th>
                                 <th width="13%">
                                     Advanced Payment
                                 </th>
                                 <th width="13%">
                                     Pending Payment
+                                </th>
+                                <th>
+                                    Status
                                 </th>
                             </tr>
                             {% for datum in data %}
@@ -141,10 +150,24 @@
                                         {{ datum.TotalRooms }}
                                     </td>
                                     <td>
-                                        {{ datum.Paid }}৳
+                                        {{ datum.Price }}
                                     </td>
                                     <td>
-                                        {{ datum.Pending }}৳
+                                        {{ datum.PaidMoney }}৳
+                                    </td>
+                                    <td>
+                                        {{ datum.MoneyToPay }}৳
+                                    </td>
+                                    <td>
+                                        {% with datum.Status as status %}
+                                            {% if status == 0 %}
+                                                Booked
+                                            {% elif status == 1 %}
+                                                Confirmed
+                                            {% else %}
+                                                Cancelled
+                                            {% endif %}
+                                        {% endwith %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -153,7 +176,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
 {% endblock content %}
