@@ -148,5 +148,5 @@ class BookingLog(models.Model):
     Booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     # 0 admin, 1 user
     Actor = models.BooleanField(default=False)
-    Message = models.CharField(max_length=100,null=True)
+    Message = models.CharField(max_length=100, null=True)
     notified = models.BooleanField(default=False)
