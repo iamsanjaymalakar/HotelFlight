@@ -152,9 +152,9 @@
                                         {{ datum.RefundedMoneyUponCancellation }}৳
                                     </td>
                                     {% now "Y-m-d" as todays_date %}
-                                    {% if datum.Checkin_Date|date:"Y-m-d" > todays_date  %}
                                     <td>
-                                        <a href="{% url 'userBookingCancel' %}?bid={{ datum.BookingID }}"><button>TEST</button></a>
+                                    {% if datum.Checkin_Date|date:"Y-mm-dd" > todays_date  %}
+                                        <a href="{% url 'userBookingCancel' %}?bid={{ datum.BookingID }}"><button>Cancel</button></a>
                                     </td>
                                     {% endif %}
                                 </tr>

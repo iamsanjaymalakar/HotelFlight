@@ -90,7 +90,7 @@ def hoteladminbookingstoday(request):
         "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
         "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
         "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s and B.isCancelled=0 "
-        "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [ hotel.id])
+        "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
     data = namedtuplefetchall(cursor)
     for dd in data:
         print(dd)

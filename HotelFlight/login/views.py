@@ -79,23 +79,6 @@ def userbookings(request):
     return render(request, "login/userBookings.html", {'data': data})
 
 
-def userflightbookings(request):
-    cursor = connection.cursor()
-    cursor.execute(
-        "SELECT DISTINCT B.id as 'bookingid',B.User_id,FR.Price*FB.TotalSeats as 'Price', FB.TotalSeats as 'TotalSeats'"
-        ",A.AirCompany_Name as 'AirCompany_Name',F.Airplane_Number as 'Plane', F.Aircraft as 'Model', FR.Time as 'Time'"
-        ",FR.Date as 'DOF', B.DateOfBooking as 'DOB',(B.PaidMoney) as 'Paid',B.MoneyToPay as 'Pending',B.MoneyToRefund "
-        "as 'RefundedMoneyUponCancellation','+'||CP.DaysCount||' day' as 'datestr', FR.Source_Airport ||','||R.Source "
-        "as 'SRC' , FR.Destination_Airport||','||R.Destination as 'DEST', FR.Duration as 'Duration' FROM "
-        "database_flight_booking FB JOIN database_booking B ON (FB.Booking_id=B.id) JOIN database_flight_route FR ON "
-        "(FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) JOIN database_air_company A ON "
-        "(F.AirCompany_id = A.id) JOIN database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN "
-        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and B.isCancelled=0 and "
-        "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id])
-    data = namedtuplefetchall(cursor)
-    return render(request, "login/userBookings.html", {'data': data})
-
-
 def bookingcancel(request):
     bookingID = request.GET.get('bid', '1')
     bookingID = int(bookingID)
@@ -130,12 +113,28 @@ def bookingcancelredirect(request):
     cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingid])
     results = cursor.fetchone()
     MoneyToDeduct = results[0]
-    print(MoneyToDeduct)
-
     cursor.execute("UPDATE database_air_company "
                    "SET TotalSentMoney = TotalSentMoney - %s "
                    "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminid])
     return HttpResponseRedirect('userbookings')
+
+
+def userflightbookings(request):
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT DISTINCT B.id as 'bookingid',B.User_id,FR.Price*FB.TotalSeats as 'Price', FB.TotalSeats as 'TotalSeats'"
+        ",A.AirCompany_Name as 'AirCompany_Name',F.Airplane_Number as 'Plane', F.Aircraft as 'Model', FR.Time as 'Time'"
+        ",FR.Date as 'DOF', B.DateOfBooking as 'DOB',(B.PaidMoney) as 'Paid',B.MoneyToPay as 'Pending',B.MoneyToRefund "
+        "as 'RefundedMoneyUponCancellation','+'||CP.DaysCount||' day' as 'datestr', FR.Source_Airport ||','||R.Source "
+        "as 'SRC' , FR.Destination_Airport||','||R.Destination as 'DEST', FR.Duration as 'Duration' FROM "
+        "database_flight_booking FB JOIN database_booking B ON (FB.Booking_id=B.id) JOIN database_flight_route FR ON "
+        "(FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) JOIN database_air_company A ON "
+        "(F.AirCompany_id = A.id) JOIN database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN "
+        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and B.isCancelled=0 and "
+        "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id])
+    data = namedtuplefetchall(cursor)
+    return render(request, "login/userBookings.html", {'data': data})
+
 
 
 def flightbookingcancel(request):
@@ -174,6 +173,4 @@ def flightbookingcancelredirect(request):
     cursor.execute("UPDATE database_air_company "
                    "SET TotalSentMoney = TotalSentMoney - %s "
                    "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminid])
-    # todo money transfer
-    # todo send mail to user
     return HttpResponseRedirect('userflightbookings')
