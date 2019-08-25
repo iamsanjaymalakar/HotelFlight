@@ -108,6 +108,8 @@ class Booking(models.Model):
     DateOfBooking = models.DateField(auto_now=False, auto_now_add=False)
     DateOfCancellation = models.DateField(auto_now=False, auto_now_add=False)
     isCancelled = models.BooleanField(default=False)
+    # 0 Booked, 1 Confirmed, 2 Cancelled
+    Status = models.IntegerField(default=0)
     PaidMoney = models.FloatField(default=0)
 
     def __str__(self):
@@ -138,4 +140,13 @@ class Payment_Log(models.Model):
 class Cancellation_Log(models.Model):
     Admin = models.ForeignKey(User, on_delete=models.CASCADE)
     Booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    notified = models.BooleanField(default=False)
+
+
+class BookingLog(models.Model):
+    Admin = models.ForeignKey(User, on_delete=models.CASCADE)
+    Booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    # 0 admin, 1 user
+    Actor = models.BooleanField(default=False)
+    Message = models.CharField(max_length=100,null=True)
     notified = models.BooleanField(default=False)
