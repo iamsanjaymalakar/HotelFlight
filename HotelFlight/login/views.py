@@ -69,7 +69,7 @@ def userbookings(request):
         "(B.PaidMoney) as 'Paid',B.MoneyToPay as 'Pending',B.MoneyToRefund as 'RefundedMoneyUponCancellation',"
         "HR.Room_id,HB.TotalRooms as 'TotalRooms', R.RoomType,R.SingleBedCount,R.DoubleBedCount,B.id as 'BookingID',"
         "H.CompanyAdmin_id as 'AdminID', H.Address,H.Hotel_Location,H.Hotel_Country,'+'||CP.DaysCount||' day' "
-        "as 'datestr', date('now') as 'Today' from database_hotel_booking HB join database_hotel_room HR "
+        "as 'datestr', date('now') as 'Today',B.Status from database_hotel_booking HB join database_hotel_room HR "
         "on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) join database_room R on "
         "(R.id=HR.Room_id) join database_hotel H on(H.id=HR.Hotel_id) join database_cancellation_policy CP on "
         "(HR.Cancellation_Policy_id=CP.id) where HB.Checkin_Date>=CURRENT_DATE and B.User_id=%s and B.isCancelled=0"
@@ -101,21 +101,36 @@ def bookingcancel(request):
 
 
 def bookingcancelredirect(request):
-    bookingid = request.GET.get('bid', '1')
-    adminid = request.GET.get('aid', '3')
-    bookingobject = Booking.objects.get(pk=int(bookingid))
-    bookingobject.isCancelled = True
-    bookingobject.save()
-    cancelobject = Cancellation_Log(Admin=User.objects.get(id=adminid), Booking=Booking.objects.get(id=bookingid),
-                                    notified=False)
-    cancelobject.save()
-    cursor = connection.cursor()
-    cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingid])
-    results = cursor.fetchone()
-    MoneyToDeduct = results[0]
-    cursor.execute("UPDATE database_air_company "
-                   "SET TotalSentMoney = TotalSentMoney - %s "
-                   "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminid])
+    bookingID = request.GET.get('bid', '1')
+    adminID = request.GET.get('aid', '3')
+    # update status of booking
+    bookingObject = Booking.objects.get(pk=int(bookingID))
+    bookingObject.Status = 2
+    bookingObject.save()
+    # add notification for admin
+    try:
+        logObject = BookingLog.objects.get(Actor=1, Admin_id=adminID, Booking_id=int(bookingID))
+        # todo
+        logObject.Message = ''
+        logObject.notified = 0
+        logObject.save()
+    except BookingLog.DoesNotExist:
+        logObject = BookingLog(Actor=1, Message='', notified=0, Admin_id=adminID, Booking_id=int(bookingID))
+        logObject.save()
+    #   cancelobject = Cancellation_Log(Admin=User.objects.get(id=adminID), Booking=Booking.objects.get(id=bookingID),
+    #                                   notified=False)
+    #   cancelobject.save()
+    # update money
+    #    cursor = connection.cursor()
+    #    cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingid])
+    #    results = cursor.fetchone()
+    #    MoneyToDeduct = results[0]
+    hotelObject = Hotel.objects.get(CompanyAdmin=adminID)
+    hotelObject.TotalSentMoney -= bookingObject.MoneyToRefund
+    hotelObject.save()
+    #    cursor.execute("UPDATE database_air_company "
+    #                   "SET TotalSentMoney = TotalSentMoney - %s "
+    #                   "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminID])
     return HttpResponseRedirect('userbookings')
 
 
@@ -134,7 +149,6 @@ def userflightbookings(request):
         "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id])
     data = namedtuplefetchall(cursor)
     return render(request, "login/userBookings.html", {'data': data})
-
 
 
 def flightbookingcancel(request):

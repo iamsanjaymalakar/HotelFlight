@@ -114,7 +114,10 @@
                                     Money to be refunded upon cancellation
                                 </th>
                                 <th>
-                                    Cancel
+                                    Status
+                                </th>
+                                <th>
+                                    Actions
                                 </th>
                             </tr>
                             {% for datum in data %}
@@ -151,12 +154,25 @@
                                     <td>
                                         {{ datum.RefundedMoneyUponCancellation }}৳
                                     </td>
+                                    <td>
+                                        {% with datum.Status as status %}
+                                            {% if status == 0 %}
+                                                Booked
+                                            {% elif status == 1 %}
+                                                Confirmed
+                                            {% else %}
+                                                Cancelled
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
                                     {% now "Y-m-d" as todays_date %}
                                     <td>
-                                    {% if datum.Checkin_Date|date:"Y-mm-dd" > todays_date  %}
-                                        <a href="{% url 'userBookingCancel' %}?bid={{ datum.BookingID }}"><button>Cancel</button></a>
-                                    </td>
-                                    {% endif %}
+                                        {% if datum.Checkin_Date|date:"Y-mm-dd" > todays_date %}
+                                            <a href="{% url 'userBookingCancel' %}?bid={{ datum.BookingID }}">
+                                                <button>Cancel</button>
+                                            </a>
+                                            </td>
+                                        {% endif %}
                                 </tr>
                             {% endfor %}
                         </table>

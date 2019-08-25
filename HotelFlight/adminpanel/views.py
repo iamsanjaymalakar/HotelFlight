@@ -33,9 +33,9 @@ def hoteladmindash(request):
                    "H.Address,H.Hotel_Location,H.Hotel_Country,U.first_name,U.last_name "
                    "from database_hotel_booking HB join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join "
                    "database_booking B on(HB.Booking_id=B.id) join database_room R on (R.id=HR.Room_id) join "
-                   "database_hotel H on(H.id=HR.Hotel_id) join database_cancellation_log CL on (B.id=CL.Booking_id) "
+                   "database_hotel H on(H.id=HR.Hotel_id) join database_bookinglog BL on (B.id=BL.Booking_id) "
                    "join auth_user U on(U.id=B.User_id)"
-                   "where HB.Checkin_Date>=CURRENT_DATE and CL.Admin_id=%s and CL.notified=0 "
+                   "where HB.Checkin_Date>=CURRENT_DATE and BL.Admin_id=%s and BL.notified=0 and BL.Actor=1 "
                    "and DATETIME(B.DateOfBooking,'+10 day')>=date('now') order by HB.Checkin_Date,"
                    "HB.Checkout_Date,B.MoneyToPay", [request.user.id])
     data = namedtuplefetchall(cursor)
@@ -55,11 +55,10 @@ def hoteladminnotifications(request):
                    "database_hotel H on(H.id=HR.Hotel_id) join database_bookinglog BL on (B.id=BL.Booking_id) "
                    "join auth_user U on(U.id=B.User_id)"
                    "where HB.Checkin_Date>=CURRENT_DATE and BL.Admin_id=%s and BL.Actor=1"
-                   " and DATETIME(B.DateOfBooking,'+10 day')>=date('now') order by HB.Checkin_Date,"
+                   " and DATETIME(B.DateOfBooking,'+10 day')>=date('now') order by BL.notified,HB.Checkin_Date,"
                    "HB.Checkout_Date,B.MoneyToPay", [request.user.id])
     data = namedtuplefetchall(cursor)
-    print(data)
-    Cancellation_Log.objects.filter(Admin_id=request.user.id).update(notified=True)
+    BookingLog.objects.filter(Admin_id=request.user.id).update(notified=True)
     return render(request, "adminpanel/hotelNotifications.html", {'data': data})
 
 
