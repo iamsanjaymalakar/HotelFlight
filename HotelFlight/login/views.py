@@ -72,11 +72,27 @@ def userbookings(request):
         "as 'datestr', date('now') as 'Today',B.Status from database_hotel_booking HB join database_hotel_room HR "
         "on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) join database_room R on "
         "(R.id=HR.Room_id) join database_hotel H on(H.id=HR.Hotel_id) join database_cancellation_policy CP on "
-        "(HR.Cancellation_Policy_id=CP.id) where HB.Checkin_Date>=CURRENT_DATE and B.User_id=%s and B.isCancelled=0"
+        "(HR.Cancellation_Policy_id=CP.id) where HB.Checkin_Date>=CURRENT_DATE and B.User_id=%s"
         " and DATETIME(B.DateOfBooking,datestr)>=date('now') order by HB.Checkin_Date,"
         "HB.Checkout_Date,B.MoneyToPay", [request.user.id])
     data = namedtuplefetchall(cursor)
-    return render(request, "login/userBookings.html", {'data': data})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
+    return render(request, "login/userBookings.html", {'data': data, 'count': count})
+
+
+def usernotifications(request):
+    cursor = connection.cursor()
+    cursor.execute(
+        "select H.Hotel_Name,H.Hotel_Location,R.RoomType,HB.Checkin_Date,HB.Checkout_Date,HB.TotalRooms,B.PaidMoney,"
+        "B.MoneyToPay,B.MoneyToRefund,BL.Message,BL.notified,B.Status from database_hotel_booking HB join "
+        "database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
+        "join database_room R on (R.id=HR.Room_id) join database_hotel H on(H.id=HR.Hotel_id) join database_bookinglog"
+        " BL on (B.id=BL.Booking_id) join auth_user U on(U.id=B.User_id) where BL.Actor=0 and  B.User_id=%s order by "
+        "BL.notified,HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay", [request.user.id])
+    data = namedtuplefetchall(cursor)
+    BookingLog.objects.filter(Booking__User=request.user).update(notified=True)
+    return render(request, "login/userNotifications.html", {'data': data})
 
 
 def bookingcancel(request):
@@ -94,7 +110,7 @@ def bookingcancel(request):
         "H.CompanyAdmin_id as 'AdminID',H.Address,H.Hotel_Location,H.Hotel_Country from database_hotel_booking HB "
         "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) join "
         "database_room R on (R.id=HR.Room_id) join database_hotel H on(H.id=HR.Hotel_id) where "
-        "HB.Checkin_Date>=CURRENT_DATE and B.id=%s and B.isCancelled=0 and DATETIME(B.DateOfBooking,%s)>=date('now')"
+        "HB.Checkin_Date>=CURRENT_DATE and B.id=%s and DATETIME(B.DateOfBooking,%s)>=date('now')"
         " order by HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay", [bookingID, datestr])
     data = namedtuplefetchall(cursor)
     return render(request, "login/bookingCancelConfirm.html", {'data': data[0]})
@@ -117,20 +133,9 @@ def bookingcancelredirect(request):
     except BookingLog.DoesNotExist:
         logObject = BookingLog(Actor=1, Message='', notified=0, Admin_id=adminID, Booking_id=int(bookingID))
         logObject.save()
-    #   cancelobject = Cancellation_Log(Admin=User.objects.get(id=adminID), Booking=Booking.objects.get(id=bookingID),
-    #                                   notified=False)
-    #   cancelobject.save()
-    # update money
-    #    cursor = connection.cursor()
-    #    cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingid])
-    #    results = cursor.fetchone()
-    #    MoneyToDeduct = results[0]
     hotelObject = Hotel.objects.get(CompanyAdmin=adminID)
     hotelObject.TotalSentMoney -= bookingObject.MoneyToRefund
     hotelObject.save()
-    #    cursor.execute("UPDATE database_air_company "
-    #                   "SET TotalSentMoney = TotalSentMoney - %s "
-    #                   "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminID])
     return HttpResponseRedirect('userbookings')
 
 

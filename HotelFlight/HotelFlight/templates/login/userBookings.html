@@ -45,6 +45,22 @@
             background-color: #350a4e;
             color: white;
         }
+
+        .notification {
+            position: relative;
+            display: inline-block;
+            border-radius: 2px;
+        }
+
+        .notification .badge {
+            position: absolute;
+            top: -1px;
+            right: -15px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background-color: red;
+            color: white;
+        }
     </style>
 
 {% endblock css %}
@@ -70,6 +86,14 @@
                             <p>Bookings</p>
                             <li>
                                 <a href="">Update Profile</a>
+                            </li>
+                            <li class="notification">
+                                <a href="{% url 'userNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li class="active">
                                 <a href="{% url 'userBookings' %}">View Hotel Bookings</a>
@@ -168,11 +192,13 @@
                                     {% now "Y-m-d" as todays_date %}
                                     <td>
                                         {% if datum.Checkin_Date|date:"Y-mm-dd" > todays_date %}
-                                            <a href="{% url 'userBookingCancel' %}?bid={{ datum.BookingID }}">
-                                                <button>Cancel</button>
-                                            </a>
-                                            </td>
+                                            {% if datum.Status == 0 %}
+                                                <a href="{% url 'userBookingCancel' %}?bid={{ datum.BookingID }}">
+                                                    <button>Cancel</button>
+                                                </a>
+                                            {% endif %}
                                         {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </table>
