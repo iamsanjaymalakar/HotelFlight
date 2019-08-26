@@ -9,6 +9,11 @@ A web based hotel and flight booking application
     * ```cd MyHotelFlight```
   * Setup a virtual environment
     * ```virtualenv venv```
+  * Activate the virtual environment
+    * Linux
+      * ```. venv/bin/activate```
+    * Windows
+      * ```venv\scripts\activate``` 
   * Install the required packages
     * ```pip install -r requirment.txt```
   * Run the server
