@@ -100,7 +100,8 @@
                             start: '{{ datum.Checkin_Date|date:"Y-m-d" }}T14:00:00',
                             end: '{{ datum.Checkout_Date|date:"Y-m-d" }}T12:00:00',
                             allDay: false,
-                            color: '{% cycle '#fcd49c' 'lightblue' %}',
+                            // Booked:lightblue, Approved:lightgreen
+                            color: '{% if datum.Status == 0 %}lightblue{% else %}lightgreen{% endif %}',
                         },
                     {% endfor %}
                 ],

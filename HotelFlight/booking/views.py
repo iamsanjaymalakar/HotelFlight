@@ -11,6 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+from datetime import datetime
 
 
 def namedtuplefetchall(cursor):
@@ -130,11 +131,14 @@ def BookingConfirmationPage(request):
     Price = results[0]
     cursor.execute("SELECT Percentage FROM database_hotel where id=%s", [hid])
     results = cursor.fetchone()
-    var = int(roomcount)
-    print(var)
+    rooms = int(roomcount)
+    date_format = "%Y-%m-%d"
+    a = datetime.strptime(checkout, date_format)
+    b = datetime.strptime(checkin, date_format)
+    delta = a - b
     Percentage = results[0] / 100
-    PaidMoney = Percentage * Price * var
-    MoneyToPay = Price * (1 - Percentage) * var
+    PaidMoney = Percentage * Price * rooms * delta.days
+    MoneyToPay = Price * (1 - Percentage) * rooms * delta.days
     # ei percentage should come from cancellation policy\
     cursor.execute(
         "SELECT Percentage_refunding FROM database_cancellation_policy WHERE id =(SELECT Cancellation_Policy_id FROM database_hotel_room where id=%s)",
@@ -143,8 +147,8 @@ def BookingConfirmationPage(request):
     Percentage_refunding = results[0] / 100
     MoneyToRefund = PaidMoney * Percentage_refunding
     cursor.execute(
-        "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled) "
-        "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE, %s, %s,0)", [id, MoneyToPay, MoneyToRefund, uid, PaidMoney])
+        "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled,Status) "
+        "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE, %s, %s,0,0)", [id, MoneyToPay, MoneyToRefund, uid, PaidMoney])
     cursor.execute("SELECT MAX(id) from database_hotel_booking")
     results = cursor.fetchone()
     new_id = 1
@@ -157,7 +161,7 @@ def BookingConfirmationPage(request):
         "VALUES (%s,%s,%s,%s,%s,%s,0)", [new_id, id, hrid, checkin, checkout, roomcount])
     cursor.execute("UPDATE database_hotel_room "
                    "SET FreeRoomCount = FreeRoomCount - %s "
-                   "WHERE id=%s", [adultcount, hrid])
+                   "WHERE id=%s", [roomcount, hrid])
 
     # generate confirmation mail
     # create message object instance
@@ -194,7 +198,7 @@ def BookingConfirmationPage(request):
     p.save()
 
     # create message object instance
-    msg = MIMEMultipart()
+    '''msg = MIMEMultipart()
 
     message = "Your booking has been confirmed! Thanks for staying with us!!"
 
@@ -230,7 +234,7 @@ def BookingConfirmationPage(request):
 
     print("email sent")
 
-    '''msg = MIMEMultipart()
+    msg = MIMEMultipart()
 
     message = "Your reservation has been succesfully confirmed!  " \
               "" \
@@ -522,8 +526,8 @@ def FlightBookingConfirmationPage(request):
         MoneyToRefund = PaidMoney * Percentage_refunding
         MoneyToRefund = PaidMoney * .8
         cursor.execute(
-            "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled) "
-            "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0)",
+            "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled,Status) "
+            "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0,0)",
             [id, MoneyToPay, MoneyToRefund, uid, PaidMoney])
         cursor.execute("SELECT MAX(id) from database_flight_booking")
         results = cursor.fetchone()
@@ -596,8 +600,8 @@ def FlightBookingConfirmationPage(request):
             MoneyToRefund = PaidMoney * Percentage_refunding
 
             cursor.execute(
-                "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation,  User_id, PaidMoney,isCancelled) "
-                "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0)",
+                "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation,  User_id, PaidMoney,isCancelled,Status) "
+                "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0,0)",
                 [id, MoneyToPay, MoneyToRefund, uid, PaidMoney])
 
             cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
