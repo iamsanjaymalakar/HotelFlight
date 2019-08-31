@@ -234,8 +234,12 @@
 
 {% block jscript %}
 <script>
-    var today = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate()
-    var tommorrow = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate()+1)
+    let jsTomorrow = new Date();
+    jsTomorrow.setDate(new Date().getDate()+1);
+    let today = new Date().getFullYear() + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" +
+            ("0" + new Date().getDate()).slice(-2);
+    let tomorrow = jsTomorrow.getFullYear() + "-" + ("0" + (jsTomorrow.getMonth() + 1)).slice(-2) + "-" +
+            ("0" + jsTomorrow.getDate()).slice(-2);
     $('#id_checkin').datepicker({
         uiLibrary: 'bootstrap4',
         value: today,
@@ -245,8 +249,8 @@
     });
     $('#id_checkout').datepicker({
         uiLibrary: 'bootstrap4',
-        value: tommorrow,
-        minDate: tommorrow,
+        value: tomorrow,
+        minDate: tomorrow,
         format: 'yyyy-mm-dd',
         size: 'small'
     });

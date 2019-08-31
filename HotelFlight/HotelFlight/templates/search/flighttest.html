@@ -33,8 +33,7 @@
     </div>
     <div class="">
         <div class="row">
-            <div class="col-lg-3" style="display: flex">
-
+            <div class="col-lg-3" style="display: flex;min-height: 650px;">
                 <div class="search" style="align-items: stretch">
                     <div class="search_inner">
                         <!-- Search Contents -->
@@ -474,8 +473,12 @@
             return obj;
         }
 
-        var today = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate()
-        var tommorrow = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate() + 1)
+        let jsTomorrow = new Date();
+        jsTomorrow.setDate(new Date().getDate()+1);
+        let today = new Date().getFullYear() + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" +
+            ("0" + new Date().getDate()).slice(-2);
+        let tomorrow = jsTomorrow.getFullYear() + "-" + ("0" + (jsTomorrow.getMonth() + 1)).slice(-2) + "-" +
+            ("0" + jsTomorrow.getDate()).slice(-2);
         $('#id_checkin').datepicker({
             uiLibrary: 'bootstrap4',
             value: getAllUrlParams().checkin,
@@ -486,14 +489,14 @@
         $('#id_checkout').datepicker({
             uiLibrary: 'bootstrap4',
             value: getAllUrlParams().checkout,
-            minDate: tommorrow,
+            minDate: tomorrow,
             format: 'yyyy-mm-dd',
             size: 'small'
         });
         $('#id_depart').datepicker({
             uiLibrary: 'bootstrap4',
             value: getAllUrlParams().depart,
-            minDate: tommorrow,
+            minDate: tomorrow,
             format: 'yyyy-mm-dd',
             size: 'small'
         });

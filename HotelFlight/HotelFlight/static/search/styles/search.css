@@ -974,6 +974,7 @@ section {
     width: 100%;
     height: 100%;
     background: #fa9e1b;
+    min-height: 200px;
 }
 
 .search_inner {

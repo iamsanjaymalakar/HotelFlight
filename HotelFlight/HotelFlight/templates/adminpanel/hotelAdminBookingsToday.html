@@ -208,7 +208,7 @@
     <script>
         let today = new Date().getFullYear() + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" +
             ("0" + new Date().getDate()).slice(-2);
-        $('#datep').datepicker({
+        let dp = $('#datep').datepicker({
             uiLibrary: 'bootstrap4',
             value: today,
             minDate: today,
