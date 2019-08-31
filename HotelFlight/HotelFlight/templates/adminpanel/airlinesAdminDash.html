@@ -41,8 +41,16 @@
 
                         <ul class="list-unstyled components">
                             <p>Dashboard</p>
-                            <li class="active">
+                            <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
+                            </li>
+                            <li class="">
+                                <a href="{% url 'airlinesAdminNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
 
                              <li>
@@ -61,6 +69,10 @@
                             <li class="">
                                 <a href="{% url 'airlinesAdminBookings' %}">View Bookings</a>
                             </li>
+                            <li class="">
+                                <a href="{% url 'airlinesAdminBookingsToday' %}">View Today's Bookings</a>
+                            </li>
+
                             <li>
                                 <a href="{% url 'airlinesAdminCalendar' %}">Calendar</a>
                             </li>

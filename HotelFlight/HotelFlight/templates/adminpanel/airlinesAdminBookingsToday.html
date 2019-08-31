@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Rooms | {{ request.user }}{% endblock title %}
+{% block title %}Bookings | {{ request.user }}{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -67,8 +67,7 @@
                         </div>
 
                         <ul class="list-unstyled components">
-                            <p>View Flights</p>
-                           <li class="">
+                            <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
                             </li>
                             <li class="">
@@ -89,14 +88,14 @@
                             <li>
                                 <a href="{% url 'airlinesAdminAddFlightRoute' %}">Add Flight to a route</a>
                             </li>
-                            <li class="active">
+                            <li>
                                 <a href="{% url 'airlinesAdminViewFlights' %}">View Flights</a>
                             </li>
 
                             <li class="">
                                 <a href="{% url 'airlinesAdminBookings' %}">View Bookings</a>
                             </li>
-                            <li class="">
+                            <li class="active">
                                 <a href="{% url 'airlinesAdminBookingsToday' %}">View Today's Bookings</a>
                             </li>
 
@@ -106,45 +105,99 @@
                         </ul>
                     </nav>
                 </div>
-                <div class="col-lg-10" style="padding-right: 30px;">
+                <div class="col-lg-10" style="padding-right: 35px;">
+
+                    <form action="{% url 'hotelAdminBookingsToday' %}">
+                        <input id="datep" name="date" width="250">
+                        <button>Submit</button>
+                    </form>
+
+
                     <div class="rooms" style="margin-top: 20px;">
 
                         <!-- Room -->
                         <table id="roomstable" width="100%">
                             <tr align="center">
+                                <th width="15%">
+                                    Booked by
+                                </th>
+                                <th width="15%">
+                                    Flight Details
+                                </th>
+                                <th width="15%">
+                                    Itinerary
+                                </th>
 
-
                                 <th>
-                                    Airplane Number
+                                    No of Seats
                                 </th>
                                 <th>
-                                    Airplane Model
+                                    Price
+                                </th>
+                                <th width="13%">
+                                    Advanced Payment
+                                </th>
+                                <th width="13%">
+                                    Pending Payment
                                 </th>
                                 <th>
-                                    Total Seats
+                                    Status
                                 </th>
                                 <th>
-                                    Modify
+                                    Actions
                                 </th>
                             </tr>
-                            {% for flight in flights %}
+                            {% for datum in data %}
                                 <tr align="center">
-
-
-
                                     <td>
-                                        {{ flight.Airplane_Number }}
+                                        {{ datum.name }}<br>
+                                        {{ datum.phn }}<br>
+                                        {{ datum.email }}
                                     </td>
                                     <td>
-                                        {{ flight.Aircraft }}
+                                          Airplane number: {{ datum.Plane }} <br>
+                                       Airplane model: {{ datum.Model }} <br>
+                                        Date : {{ datum.DOF }}<br>
+                                        Time : {{ datum.Time }}<br>
+                                        Duration(in minutes) : {{ datum.Duration }}
                                     </td>
                                     <td>
-                                        {{ flight.TotalSeats }}
+                                          {{ datum.SRC }}<br>
+                                        to<br>
+                                        {{ datum.DEST }}
+                                    <td>
+                                        {{ datum.seats }}
                                     </td>
                                     <td>
-                                        <a href="{% url 'airlinesAdminFlightSingle' %}?flightID={{ flight.id }}">
-                                        <button class="button search_button" style="margin: 0px;">Update</button>
-                                        </a>
+                                        {{ datum.Price }}৳
+                                    </td>
+                                    <td>
+                                        {{ datum.PaidMoney }}৳
+                                    </td>
+                                    <td>
+                                        {{ datum.MoneyToPay }}৳
+                                    </td>
+                                    <td>
+                                        {% with datum.Status as status %}
+                                            {% if status == 0 %}
+                                                Booked
+                                            {% elif status == 1 %}
+                                                Confirmed
+                                            {% else %}
+                                                Cancelled
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+                                            <option value="">Select...</option>
+                                            <option value="{% url 'airlinesAdminBookingConfirm' %}?bid={{ datum.BID }}">
+                                                Confirm
+                                            </option>
+                                            <option value="{% url 'airlinesAdminBookingCancel' %}?bid={{ datum.BID }}">
+                                                Cancel
+                                            </option>
+                                        </select>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -154,6 +207,19 @@
             </div>
         </div>
     </div>
-    </div>
 
 {% endblock content %}
+
+{% block jscript %}
+    <script>
+        let today = new Date().getFullYear() + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" +
+            ("0" + new Date().getDate()).slice(-2);
+        $('#datep').datepicker({
+            uiLibrary: 'bootstrap4',
+            value: today,
+            minDate: today,
+            format: 'yyyy-mm-dd',
+            size: 'small'
+        });
+    </script>
+{% endblock %}

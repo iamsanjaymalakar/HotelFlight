@@ -20,5 +20,9 @@ urlpatterns = [
     path('adminAirlinesUpdateFlights', views.airlinesadminflightsingle, name='airlinesAdminFlightSingle'),
     path('adminAirlinesAddFlight', views.airlinesadminaddflight, name='airlinesAdminAddFlight'),
     path('airlinesAdminCalendar', views.airlinesadmincalendar, name='airlinesAdminCalendar'),
-    path('airlinesAdminBookings', views.airlinesadminbookings, name='airlinesAdminBookings')
+    path('airlinesAdminBookings', views.airlinesadminbookings, name='airlinesAdminBookings'),
+    path('adminAirlinesBookingsToday', views.airlinesAdminBookingsToday, name='airlinesAdminBookingsToday'),
+    path('adminAirlinesBookingConfirm', views.airlinesadminbookingconfirm, name='airlinesAdminBookingConfirm'),
+    path('adminAirlinesBookingCancel', views.airlinesadminbookingcancel, name='airlinesAdminBookingCancel'),
+    path('adminAirlinesNotifications', views.airlinesadminnotifications, name='airlinesAdminNotifications')
 ]

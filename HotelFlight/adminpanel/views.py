@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .forms import *
 from django.contrib import messages
-from database.models import Hotel, Hotel_Room, Room
+from database.models import Hotel, Hotel_Room, Room, BookingLog
 from django.contrib.auth.decorators import login_required, user_passes_test
 import os
 from django.http import HttpResponseRedirect
@@ -273,7 +273,9 @@ def airlinesadmindash(request):
 def airlinesadminbookings(request):
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT U.first_name || ' ' || U.last_name as 'name',U.email as 'email',P.Phone as 'phn',F.Airplane_Number as 'airplanenumber',B.DateOfBooking as 'dob',FR.Date as 'dof',(FR.Price*FB.TotalSeats - B.MoneyToPay) as 'Paid',B.MoneyToRefund as 'Pending', FB.TotalSeats as 'seats' "
+        "SELECT U.first_name || ' ' || U.last_name as 'name',U.email as 'email',P.Phone as 'phn',"
+        "F.Airplane_Number as 'airplanenumber',B.DateOfBooking as 'dob',FR.Date as 'dof',(B.PaidMoney) "
+        "as 'Paid',B.MoneyToPay as 'Pending', FB.TotalSeats as 'seats' "
         "FROM database_flight_booking FB JOIN database_booking B ON (B.id = FB.Booking_id) "
         "JOIN database_flight_route FR ON (FR.id = FB.Flight_id) "
         "JOIN database_flight F ON (F.id = FR.Flight_id) "
@@ -407,7 +409,6 @@ def airlinesadminaddflight(request):
 
 def airlinesadmincalendar(request):
     cursor = connection.cursor()
-
     cursor.execute(
         "SELECT F.Airplane_Number as 'airplanenumber',B.DateOfBooking as 'dob',FR.Date as 'dof', sum(FB.TotalSeats) as 'seats' "
         "FROM database_flight_booking FB JOIN database_booking B ON (B.id = FB.Booking_id) "
@@ -422,3 +423,98 @@ def airlinesadmincalendar(request):
         print(datum.seats)
     # return render(request,"adminpanel/airlinesAdminDash.html")
     return render(request, "adminpanel/airlinesAdminCalendar.html", {'data': data})
+
+
+def airlinesAdminBookingsToday(request):
+    airlines = Air_Company.objects.get(CompanyAdmin=request.user.id)
+    date = request.GET.get("date", "default")
+    cursor = connection.cursor()
+    if date == "default":
+        cursor.execute(
+            "SELECT B.id as 'BID',U.first_name || ' ' || U.last_name as 'name',U.email as 'email',P.Phone as 'phn',"
+            "FR.Price as 'Price',B.PaidMoney,B.MoneyToPay,F.Airplane_Number as 'Plane',F.Aircraft as 'Model',"
+            "B.DateOfBooking as 'dob',FR.Date as 'DOF',FR.Time as 'Time',FR.Duration as 'Duration',B.PaidMoney "
+            "as 'Paid',B.MoneyToPay as 'Pending', FB.TotalSeats as 'seats', FR.Source_Airport||','|| R.Source as 'SRC',"
+            "FR.Destination_Airport || ',' || R.Destination as 'DEST',B.Status "
+            "FROM database_flight_booking FB JOIN database_booking B ON (B.id = FB.Booking_id) "
+            "JOIN database_flight_route FR ON (FR.id = FB.Flight_id) JOIN database_route R on (R.id=FR.Route_id) "
+            "JOIN database_flight F ON (F.id = FR.Flight_id) "
+            "JOIN database_air_company A ON (F.AirCompany_id = A.id) "
+            "JOIN auth_user U on (U.id = B.user_id) "
+            "JOIN database_profile P on(P.user_id=U.id) "
+            "WHERE A.CompanyAdmin_id = %s AND FR.Date<=CURRENT_DATE"
+            , [request.user.id])
+    else:
+        cursor.execute(
+            "SELECT B.id as 'BID',U.first_name || ' ' || U.last_name as 'name',U.email as 'email',P.Phone as 'phn',"
+            "FR.Price as 'Price',B.PaidMoney,B.MoneyToPay,F.Airplane_Number as 'Plane',F.Aircraft as 'Model',"
+            "B.DateOfBooking as 'dob',FR.Date as 'DOF',FR.Time as 'Time',FR.Duration as 'Duration',B.PaidMoney as "
+            "'Paid',B.MoneyToPay as 'Pending', FB.TotalSeats as 'seats', FR.Source_Airport||','|| R.Source as 'SRC',"
+            "FR.Destination_Airport || ',' || R.Destination as 'DEST', B.Status  "
+            "FROM database_flight_booking FB JOIN database_booking B ON (B.id = FB.Booking_id) "
+            "JOIN database_flight_route FR ON (FR.id = FB.Flight_id) JOIN database_route R on (R.id=FR.Route_id) "
+            "JOIN database_flight F ON (F.id = FR.Flight_id) "
+            "JOIN database_air_company A ON (F.AirCompany_id = A.id) "
+            "JOIN auth_user U on (U.id = B.user_id) "
+            "JOIN database_profile P on(P.user_id=U.id) "
+            "WHERE A.CompanyAdmin_id = %s AND FR.Date<=%s"
+            "", [request.user.id, date])
+    data = namedtuplefetchall(cursor)
+    return render(request, "adminpanel/airlinesAdminBookingsToday.html", {'data': data})
+
+
+def airlinesadminbookingconfirm(request):
+    bookingID = request.GET.get('bid', 1)
+    bookingObject = Booking.objects.get(pk=int(bookingID))
+    # update status to confirmed
+    bookingObject.Status = 1
+    bookingObject.save()
+    # add notification for user
+    try:
+        logObject = BookingLog.objects.get(Actor=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        logObject.Message = ''
+        logObject.notified = 0
+        logObject.save()
+    except BookingLog.DoesNotExist:
+        logObject = BookingLog(Actor=0, Message='', notified=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        logObject.save()
+    return HttpResponseRedirect('adminAirlinesBookingsToday')
+
+
+def airlinesadminbookingcancel(request):
+    bookingID = request.GET.get('bid', 1)
+    bookingObject = Booking.objects.get(pk=int(bookingID))
+    # update status to cancelled
+    bookingObject.Status = 2
+    bookingObject.save()
+    # add notification for user
+    try:
+        logObject = BookingLog.objects.get(Actor=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        # todo
+        logObject.Message = ''
+        logObject.notified = 0
+        logObject.save()
+    except BookingLog.DoesNotExist:
+        logObject = BookingLog(Actor=0, Message='', notified=0, Admin_id=request.user.id, Booking_id=int(bookingID))
+        logObject.save()
+    return HttpResponseRedirect('adminAirlinesBookingsToday')
+
+
+def airlinesadminnotifications(request):
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT DISTINCT BL.notified,B.id as 'bookingid',B.User_id,FR.Price*FB.TotalSeats as 'Price', FB.TotalSeats "
+        "as 'TotalSeats',A.AirCompany_Name as 'AirCompany_Name',F.Airplane_Number as 'Plane', F.Aircraft as 'Model', "
+        "FR.Time as 'Time',FR.Date as 'DOF', B.DateOfBooking as 'DOB',(B.PaidMoney) as 'Paid',B.MoneyToPay as 'Pending'"
+        ",B.MoneyToRefund as 'RefundedMoneyUponCancellation','+'||CP.DaysCount||' day' as 'datestr', "
+        "FR.Source_Airport ||','||R.Source as 'SRC' , FR.Destination_Airport||','||R.Destination as 'DEST',"
+        "U.first_name,U.last_name, FR.Duration as 'Duration' FROM database_flight_booking FB JOIN database_booking B "
+        "ON (FB.Booking_id=B.id) join auth_user U on(U.id=B.User_id) JOIN database_flight_route FR ON "
+        "(FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) JOIN database_air_company A ON "
+        "(F.AirCompany_id = A.id) JOIN database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN "
+        "database_route R ON (R.id = FR.Route_id) join database_bookinglog BL on (B.id=BL.Booking_id) "
+        "WHERE BL.Admin_id=%s and BL.Actor=1 and "
+        "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id])
+    data = namedtuplefetchall(cursor)
+    BookingLog.objects.filter(Admin_id=request.user.id).update(notified=True)
+    return render(request, "adminpanel/airlinesNotifications.html", {'data': data})
