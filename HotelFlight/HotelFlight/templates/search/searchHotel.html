@@ -60,23 +60,23 @@
                                               class="search_panel_content d-flex flex-lg-row flex-column align-items-lg-center align-items-start justify-content-lg-between justify-content-start">
                                             <div class="search_item">
                                                 <div>destination</div>
-                                                {% render_field hotelform.hoteldest class="destination search_input" placeholder=hotelform.hoteldest.label value=request.GET.hoteldest %}
+                                                {% render_field hotelForm.hoteldest class="destination search_input" placeholder=hotelForm.hoteldest.label value=request.GET.hoteldest %}
                                             </div>
                                             <div class="search_item">
                                                 <div>check in</div>
-                                                {% render_field hotelform.checkin class="check_in search_input" placeholder=hotelform.checkin.label%}
+                                                {% render_field hotelForm.checkin class="check_in search_input" placeholder=hotelForm.checkin.label%}
                                             </div>
                                             <div class="search_item">
                                                 <div>check out</div>
-                                                {% render_field hotelform.checkout class="check_out search_input" placeholder=hotelform.checkout.label%}
+                                                {% render_field hotelForm.checkout class="check_out search_input" placeholder=hotelForm.checkout.label%}
                                             </div>
                                             <div class="search_item">
                                                 <div>room</div>
-                                                {% render_field hotelform.room class="search_input room" placeholder=hotelform.room.label %}
+                                                {% render_field hotelForm.room class="search_input room" placeholder=hotelForm.room.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>adults</div>
-                                                {% render_field hotelform.adult class="search_input" placeholder=hotelform.adult.label %}
+                                                {% render_field hotelForm.adult class="search_input" placeholder=hotelForm.adult.label %}
                                             </div>
                                             <button class="button search_button">
                                                 search<span></span><span></span><span></span>
@@ -94,23 +94,23 @@
 
                                             <div class="search_item">
                                                 <div>from</div>
-                                                 {% render_field flightform.source class="from search_input" placeholder=flightform.source.label %}
+                                                 {% render_field flightForm.source class="from search_input" placeholder=flightForm.source.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>to</div>
-                                                {% render_field flightform.dest class="to search_input" placeholder=flightform.dest.label %}
+                                                {% render_field flightForm.dest class="to search_input" placeholder=flightForm.dest.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>depart</div>
-                                                {% render_field flightform.depart class="from search_input" placeholder=flightform.depart.label %}
+                                                {% render_field flightForm.depart class="from search_input" placeholder=flightForm.depart.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>adults</div>
-                                                {% render_field flightform.adult class="search_input" placeholder=flightform.adult.label %}
+                                                {% render_field flightForm.adult class="search_input" placeholder=flightForm.adult.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>children</div>
-                                                {% render_field flightform.children class="search_input" placeholder=flightform.children.label %}
+                                                {% render_field flightForm.children class="search_input" placeholder=flightForm.children.label %}
                                             </div>
                                             <button class="button search_button">search<span></span><span></span><span></span></button>
                                              {% csrf_token %}

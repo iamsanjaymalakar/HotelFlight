@@ -2,12 +2,15 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import SearchHotelForm, SearchFlightForm
 from django.db import connection
-from django.core.paginator import Paginator
 from collections import namedtuple
+from datetime import datetime
 import os
 
 
-# Create your views here.
+def daysBetween(d1, d2):
+    d1 = datetime.strptime(d1, "%Y-%m-%d")
+    d2 = datetime.strptime(d2, "%Y-%m-%d")
+    return abs((d2 - d1).days)
 
 
 def namedtuplefetchall(cursor):
@@ -17,55 +20,49 @@ def namedtuplefetchall(cursor):
 
 
 def homepage(request):
-    hotelform = SearchHotelForm()
-    flightform = SearchFlightForm()
-    return render(request, "search/homepage.html", {'hotelform': hotelform, 'flightform': flightform})
+    hotelForm = SearchHotelForm()
+    flightForm = SearchFlightForm()
+    return render(request, "search/homepage.html", {'hotelForm': hotelForm, 'flightForm': flightForm})
 
 
 def searchHotelPage(request):
-    hotelform = SearchHotelForm()
-    flightform = SearchFlightForm()
+    hotelForm = SearchHotelForm()
+    flightFrom = SearchFlightForm()
     dest = request.GET.get('hoteldest', '')
     checkin = request.GET.get('checkin', '')
     checkout = request.GET.get('checkout', '')
-    roomcount = request.GET.get('room', '')
-    adultcount = request.GET.get('adult', '')
+    roomCount = request.GET.get('room', '')
+    adultCount = request.GET.get('adult', '')
     dest = '%' + dest + '%'
-    roomcount = int(roomcount)
     cursor = connection.cursor()
-    cursor.execute("SELECT H.Hotel_Name,H.Address,H.Hotel_Location,H.Hotel_Country,H.Description,sum(HR.FreeRoomCount)"
+    cursor.execute("SELECT H.Hotel_Name,H.Address,H.Hotel_Location,H.Hotel_Country,H.Description,HR.FreeRoomCount"
                    " as 'Num', min(HR.Price)*%s as 'Price', H.CompanyAdmin_id as ID , H.id as HID  FROM "
                    "database_hotel_room HR  join database_hotel H on(HR.Hotel_id=H.id) where (lower(H.Hotel_Name) "
                    "Like %s OR lower(H.Hotel_Location) Like %s OR lower(H.Hotel_Country) Like %s OR "
-                   "lower(H.Address) Like %s) GROUP BY H.Hotel_Name HAVING Num >= %s",
-                   [roomcount, dest, dest, dest, dest, roomcount])
+                   "lower(H.Address) Like %s) and Num >= %s GROUP BY H.Hotel_Name",
+                   [int(roomCount), dest, dest, dest, dest, int(roomCount)])
     hotels = namedtuplefetchall(cursor)
-    # paginator = Paginator(data, 5)
-    # page = request.GET.get('page')
-    # hotels = paginator.get_page(page)
+    # setting initial values for room and adult
+    hotelForm.fields['room'].initial = int(roomCount)
+    hotelForm.fields['adult'].initial = int(adultCount)
     return render(request, "search/searchHotel.html",
-                  {'hotelform': hotelform, 'flightform': flightform, 'hotels': hotels})
+                  {'hotelForm': hotelForm, 'flightForm': flightFrom, 'hotels': hotels})
 
 
 # @login_required(login_url='/login/')
 def hotelrooms(request):
-    hotelform = SearchHotelForm()
-    flightform = SearchFlightForm()
-    dest = request.GET.get('hoteldest', '')
-    checkin = request.GET.get('checkin', '')
-    checkout = request.GET.get('checkout', '')
-    roomcount = request.GET.get('room', '')
-    adultcount = request.GET.get('adult', '')
-    hid = request.GET.get('hid', '')
-    huid = request.GET.get('huid', '')
-    dest = '%' + dest + '%'
-    roomcount = int(roomcount)
-    hid = int(hid)
-    huid = int(huid)
+    hotelForm = SearchHotelForm()
+    flightForm = SearchFlightForm()
+    checkIn = request.GET.get('checkin', '')
+    checkOut = request.GET.get('checkout', '')
+    roomCount = request.GET.get('room', '')
+    adultCount = request.GET.get('adult', '')
+    hotelID = request.GET.get('hid', '')
+    dateCount = daysBetween(checkIn, checkOut)
     cursor = connection.cursor()
     cursor.execute("select H.Hotel_Name,H.Address,H.Hotel_Location,H.Hotel_Country,H.Description,H.CompanyAdmin_id "
                    "as 'uid',H.id as 'hid' from database_hotel H WHERE H.id=%s",
-                   [hid])
+                   [int(hotelID)])
     hotel = namedtuplefetchall(cursor)
     hotelRoot = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     userf = 'user_' + str(hotel[0].uid)
@@ -75,11 +72,14 @@ def hotelrooms(request):
                    "HR.Complimentary_Breakfast,HR.wifi,HR.FreeRoomCount as 'cnt',HR.Hotel_id as 'hotelID',"
                    " HR.Room_id as 'roomID',hr.ID as 'hrID' from database_room R join database_hotel_room HR "
                    "on (R.id=HR.Room_id) where HR.Hotel_id=%s and cnt>=%s group by HR.Hotel_id,R.id ",
-                   [roomcount, hid, roomcount])
+                   [int(roomCount), int(hotelID), int(roomCount)])
     rooms = namedtuplefetchall(cursor)
+    # setting initial values for room and adult
+    hotelForm.fields['room'].initial = int(roomCount)
+    hotelForm.fields['adult'].initial = int(adultCount)
     return render(request, "search/hotelRooms.html",
-                  {'hotelform': hotelform, 'flightform': flightform, 'hotel': hotel[0], 'rooms': rooms,
-                   'imageList': imageList})
+                  {'hotelForm': hotelForm, 'flightForm': flightForm, 'hotel': hotel[0], 'rooms': rooms,
+                   'imageList': imageList, 'daysCount': dateCount})
 
 
 def searchFlightPage(request):

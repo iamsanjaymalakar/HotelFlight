@@ -1,16 +1,10 @@
 from search.forms import SearchHotelForm, SearchFlightForm
-# mail
 from django.shortcuts import render
 from .forms import HotelBookingForm, FlightBookingForm
 from django.db import connection
 from collections import namedtuple
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
 from datetime import datetime
 
 
@@ -20,37 +14,37 @@ def namedtuplefetchall(cursor):
     return [nt_result(*row) for row in cursor.fetchall()]
 
 
+def daysBetween(d1, d2):
+    d1 = datetime.strptime(d1, "%Y-%m-%d")
+    d2 = datetime.strptime(d2, "%Y-%m-%d")
+    return abs((d2 - d1).days)
+
+
 # Create your views here.
 def hotelbookingpage(request):
-    dest = request.GET.get('hoteldest', '')
-    checkin = request.GET.get('checkin', '')
-    checkout = request.GET.get('checkout', '')
-    roomcount = request.GET.get('room', '')
-    adultcount = request.GET.get('adult', '')
-    hid = request.GET.get('hid', '')
-    huid = request.GET.get('huid', '')
-    hrid = request.GET.get('hrid', '')
-    hrid = int(hrid)
-    roomcount = int(roomcount)
+    checkIn = request.GET.get('checkin', '')
+    checkOut = request.GET.get('checkout', '')
+    roomCount = request.GET.get('room', '')
+    dateCount = daysBetween(checkIn, checkOut)
+    hotelRoomID = request.GET.get('hrid', '')
     cursor = connection.cursor()
     cursor.execute("SELECT R.RoomType, R.SingleBedCount, R.DoubleBedCount,HR.Room_id as 'roomID',"
-                   "HR.Price*%s as 'Price',R.AirConditioner,HR.Complimentary_Breakfast,HR.wifi FROM "
+                   "HR.Price*%s*%s as 'Price',R.AirConditioner,HR.Complimentary_Breakfast,HR.wifi FROM "
                    "database_hotel_room HR JOIN database_room R ON HR.Room_id=R.id "
                    "WHERE HR.id=%s",
-                   [roomcount, hrid])
+                   [int(roomCount), dateCount, int(hotelRoomID)])
     room = namedtuplefetchall(cursor)
     cursor.execute("SELECT H.Hotel_Name, H.Hotel_Location, H.Hotel_Country,H.Address,H.CompanyAdmin_id as 'uid' FROM "
                    "database_hotel_room HR JOIN database_hotel H ON HR.Hotel_id=H.id WHERE HR.id=%s",
-                   [hrid])
+                   [int(hotelRoomID)])
     hotel = namedtuplefetchall(cursor)
     form = HotelBookingForm()
-    hotelform = SearchHotelForm()
-    flightform = SearchFlightForm()
+    hotelForm = SearchHotelForm()
+    flightForm = SearchFlightForm()
     return render(request, "booking/hotelbooking.html",
-                  {'room': room[0], 'hotel': hotel[0], 'form': form, 'hotelform': hotelform, 'flightform': flightform})
+                  {'room': room[0], 'hotel': hotel[0], 'form': form, 'hotelForm': hotelForm, 'flightForm': flightForm})
 
 
-# Create your views here.
 def hotelbookingpaymet(request):
     roomcount = request.GET.get('room', '')
     hrid = request.GET.get('hrid', '')
