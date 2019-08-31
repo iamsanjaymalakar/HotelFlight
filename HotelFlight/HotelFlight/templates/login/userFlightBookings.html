@@ -63,21 +63,29 @@
                 <div class="col-lg-2" style="display: flex">
                     <nav id="sidebar">
                         <div class="sidebar-header">
-                            <h3>Hotel Bookings</h3>
+                            <h3>Flight Bookings</h3>
                         </div>
 
                         <ul class="list-unstyled components">
-                            <p>Bookings</p>
+                            <p>Flight Bookings</p>
                             <li>
                                 <a href="">Update Profile</a>
                             </li>
-                            <li class="">
+                             <li class="notification">
+                                <a href="{% url 'userNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{% url 'userBookings' %}">View Hotel Bookings</a>
                             </li>
                             <li class="active">
                                 <a href="{% url 'userFlightBookings' %}">View Flight Bookings</a>
                             </li>
-         u               </ul>
+                        </ul>
                     </nav>
                 </div>
                 <div class="col-lg-10" style="padding-right: 35px;">

@@ -74,6 +74,18 @@
                                 {% endif %}
                             </li>
                         {% endfor %}
+                        {% for datum in data1 %}
+                            <li class="{% if datum.notified == False %}alert-danger{% else %}alert-info{% endif %}"
+                                style="font-size:25px;padding: 15px;margin-bottom: 10px;">
+                                {% if datum.Status == 1 %}
+                                    Your booking of Flight number: {{ datum.Plane }}  on {{ datum.DOF }} at {{ datum.Date }}of {{ datum.TotalSeats }} seat(s)
+                                    has been confirmed by {{ datum.AirCompany_Name }}.
+                                {% elif datum.Status == 2 %}
+                                    Your booking of Flight number: {{ datum.Plane }}  on {{ datum.DOF }} at {{ datum.Date }}of {{ datum.TotalSeats }} seat(s)
+                                    has been cancelled by {{ datum.AirCompany_Name }}.
+                                {% endif %}
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>

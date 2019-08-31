@@ -67,9 +67,16 @@
                         </div>
 
                         <ul class="list-unstyled components">
-                            <p>Bookings</p>
-                                                     <li>
+                            <p>Hotel Bookings</p>
+                            <li>
                                 <a href="">Update Profile</a>
+                            </li>
+                            <li class="notification">
+                                <a href="{% url 'userNotifications' %}">
+                                    Notifications {% if count > 0 %}
+                                    <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li class="active">
                                 <a href="{% url 'userBookings' %}">View Hotel Bookings</a>

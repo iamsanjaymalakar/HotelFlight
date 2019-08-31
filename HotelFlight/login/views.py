@@ -91,8 +91,21 @@ def usernotifications(request):
         " BL on (B.id=BL.Booking_id) join auth_user U on(U.id=B.User_id) where BL.Actor=0 and  B.User_id=%s order by "
         "BL.notified,HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay", [request.user.id])
     data = namedtuplefetchall(cursor)
+    cursor.execute(
+        "SELECT DISTINCT BL.Message,BL.notified,B.Status,B.id as 'bookingid',B.User_id,FR.Price*FB.TotalSeats as "
+        "'Price', FB.TotalSeats as 'TotalSeats',A.AirCompany_Name as 'AirCompany_Name',F.Airplane_Number as 'Plane', "
+        "F.Aircraft as 'Model', FR.Time as 'Time',FR.Date as 'DOF', B.DateOfBooking as 'DOB',(B.PaidMoney) as 'Paid',"
+        "B.MoneyToPay as 'Pending',B.MoneyToRefund as 'RefundedMoneyUponCancellation','+'||CP.DaysCount||' day' "
+        "as 'datestr', FR.Source_Airport ||','||R.Source as 'SRC' , FR.Destination_Airport||','||R.Destination "
+        "as 'DEST', FR.Duration as 'Duration' FROM database_flight_booking FB JOIN database_booking B ON "
+        "(FB.Booking_id=B.id) JOIN database_bookinglog BL on (B.id=BL.Booking_id) JOIN database_flight_route FR ON "
+        "(FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) JOIN database_air_company A ON "
+        "(F.AirCompany_id = A.id) JOIN database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN "
+        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and "
+        "BL.Actor=0  order by B.DateOfBooking,FR.Date", [request.user.id])
+    data1 = namedtuplefetchall(cursor)
     BookingLog.objects.filter(Booking__User=request.user).update(notified=True)
-    return render(request, "login/userNotifications.html", {'data': data})
+    return render(request, "login/userNotifications.html", {'data': data, 'data1': data1})
 
 
 def bookingcancel(request):
@@ -113,7 +126,9 @@ def bookingcancel(request):
         "HB.Checkin_Date>=CURRENT_DATE and B.id=%s and DATETIME(B.DateOfBooking,%s)>=date('now')"
         " order by HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay", [bookingID, datestr])
     data = namedtuplefetchall(cursor)
-    return render(request, "login/bookingCancelConfirm.html", {'data': data[0]})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
+    return render(request, "login/bookingCancelConfirm.html", {'data': data[0], 'count': count})
 
 
 def bookingcancelredirect(request):
@@ -150,10 +165,12 @@ def userflightbookings(request):
         "database_flight_booking FB JOIN database_booking B ON (FB.Booking_id=B.id) JOIN database_flight_route FR ON "
         "(FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) JOIN database_air_company A ON "
         "(F.AirCompany_id = A.id) JOIN database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN "
-        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and B.isCancelled=0 and "
+        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and B.Status=0 and "
         "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id])
     data = namedtuplefetchall(cursor)
-    return render(request, "login/userBookings.html", {'data': data})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
+    return render(request, "login/userFlightBookings.html", {'data': data, 'count': count})
 
 
 def flightbookingcancel(request):
@@ -170,26 +187,38 @@ def flightbookingcancel(request):
         "(FB.Booking_id=B.id) JOIN database_flight_route FR ON (FB.Flight_id = FR.id) JOIN database_flight F ON "
         "(FR.Flight_id = F.id) JOIN database_air_company A ON (F.AirCompany_id = A.id) JOIN "
         "database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN database_route R ON "
-        "(R.id = FR.Route_id) WHERE B.User_id = %s and B.id = %s and B.isCancelled=0 and "
+        "(R.id = FR.Route_id) WHERE B.User_id = %s and B.id = %s and B.Status=0 and "
         "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id, bookingID])
     data = namedtuplefetchall(cursor)
-    return render(request, "login/flightBookingCancelConfirm.html", {'datum': data[0]})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
+    return render(request, "login/flightBookingCancelConfirm.html", {'datum': data[0], 'count': count})
 
 
 def flightbookingcancelredirect(request):
-    bookingid = request.GET.get('bid', '1')
-    adminid = request.GET.get('aid', '3')
-    bookingobject = Booking.objects.get(pk=int(bookingid))
-    bookingobject.isCancelled = True
-    bookingobject.save()
-    cancelobject = Cancellation_Log(Admin=User.objects.get(id=adminid), Booking=Booking.objects.get(id=bookingid),
+    bookingID = request.GET.get('bid', '1')
+    adminID = request.GET.get('aid', '3')
+    bookingObject = Booking.objects.get(pk=int(bookingID))
+    bookingObject.Status = 2
+    bookingObject.save()
+    # add notification for admin
+    try:
+        logObject = BookingLog.objects.get(Actor=1, Admin_id=adminID, Booking_id=int(bookingID))
+        # todo
+        logObject.Message = ''
+        logObject.notified = 0
+        logObject.save()
+    except BookingLog.DoesNotExist:
+        logObject = BookingLog(Actor=1, Message='', notified=0, Admin_id=adminID, Booking_id=int(bookingID))
+        logObject.save()
+    cancelobject = Cancellation_Log(Admin=User.objects.get(id=adminID), Booking=Booking.objects.get(id=bookingID),
                                     notified=False)
     cancelobject.save()
     cursor = connection.cursor()
-    cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingid])
+    cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingID])
     results = cursor.fetchone()
     MoneyToDeduct = results[0]
     cursor.execute("UPDATE database_air_company "
                    "SET TotalSentMoney = TotalSentMoney - %s "
-                   "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminid])
+                   "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminID])
     return HttpResponseRedirect('userflightbookings')
