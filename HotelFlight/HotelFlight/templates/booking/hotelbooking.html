@@ -4,6 +4,7 @@
 {% load url_replace %}
 {% load url_get %}
 {% load widget_tweaks %}
+{% load room_images %}
 
 
 {% block title %}Book room at {{ hotel.Hotel_Name }}{% endblock title %}
@@ -16,6 +17,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/single_listing_styles.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/responsive.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'gijgo/js/gijgo.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'adminpanel/sidebar.css' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 {% endblock css %}
@@ -156,16 +158,20 @@
                                                 <div class="row no-margin no-padding">
                                                     <div class="col-lg-3 no-padding no-margin">
                                                         <div class="">
+                                                            {% room_images hotel.uid room.roomID as roomImages %}
                                                             {% with hotel.uid|stringformat:"i" as ID and room.roomID|stringformat:"i" as rID %}
-                                                                `
-                                                                <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/0.jpg' %}"
-                                                                     alt="" width="100%" height="20%">
+                                                                {% for firstImage in roomImages %}
+                                                                    {% if forloop.first %}
+                                                                        <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/'|add:firstImage %}" alt="" width="100%" height="20%">
+                                                                    {% endif %}
+                                                                {% endfor %}
                                                             {% endwith %}
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
                                                         <div class="room_content">
                                                             <div class="room_title">{{ room.RoomType }} Room</div>
+                                                            <div class="room_price">{{ room.NPrice }}৳/night</div>
                                                             <div class="room_text">Selected rooms
                                                                 : {{ request.GET.room }}</div>
                                                             <div class="room_text">Single
@@ -189,10 +195,31 @@
                                                     <div class="col-lg-2 text-lg-right">
                                                         Price:<br/>
                                                         <div class="offers_price">
-                                                            {{ room.Price }}‎৳<br/><span>per night</span>
+                                                            {{ room.Price }}‎৳<br/>
                                                         </div>
+                                                         <div class="room_price">
+                                                                    {{ daysCount }} night{% if daysCount > 1 %}s{% endif %}
+                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <hr>
+                                            <!-- new -->
+                                            <div class="container" align="center">
+                                                <!-- Full-width images with number text -->
+                                                {% room_images hotel.uid room.roomID as roomImages %}
+                                                {% for image in roomImages %}
+                                                    <div class="mySlides">
+                                                        <div class="numbertext">{{ forloop.counter }}/ {{ roomImages|length }}</div>
+                                                        {% with hotel.uid|stringformat:"i" as ID and room.roomID|stringformat:"i" as rID %}
+                                                                <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/'|add:image %}"
+                                                                      alt="" width="70%" height="400px" class="cursor">
+                                                        {% endwith %}
+                                                    </div>
+                                                {% endfor %}
+                                                <!-- Next and previous buttons -->
+                                                <a class="prev" style="color: #fff;left:180px;top:210px;" onclick="plusSlides(-1)">&#10094;</a>
+                                                <a class="next" style="color: #fff;top:210px;right:180px;" onclick="plusSlides(1)">&#10095;</a>
                                             </div>
                                             <hr>
                                         </div>
@@ -247,6 +274,7 @@
                                                        value="{{ request.GET.hrid }}"/>
                                                 <input type="hidden" name="uid" value="{{ user.id }}"/>
                                                 <input type="hidden" name="room" value="{{ request.GET.room }}"/>
+                                                <input type="hidden" name="adult" value="{{ request.GET.adult }}"/>
                                                 <button type="submit" id="form_submit_button"
                                                         class="form_submit_button button trans_200">Confrim booking
                                                 </button>
@@ -349,5 +377,41 @@
         format: 'yyyy-mm-dd',
         size: 'small'
     });
+</script>
+<script>
+    var slideIndex = 1;
+    showSlides(slideIndex);
+    // Next/previous controls
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+
+    // Thumbnail image controls
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    function showSlides(n) {
+        var i;
+        var slides = document.getElementsByClassName("mySlides");
+        var dots = document.getElementsByClassName("demo");
+        var captionText = document.getElementById("caption");
+        if (n > slides.length) {
+            slideIndex = 1
+        }
+        if (n < 1) {
+            slideIndex = slides.length
+        }
+        for (i = 0; i < slides.length; i++) {
+            console.log(i);
+            slides[i].style.display = "none";
+        }
+        for (i = 0; i < dots.length; i++) {
+            dots[i].className = dots[i].className.replace(" active", "");
+        }
+        slides[slideIndex - 1].style.display = "block";
+        dots[slideIndex - 1].className += " active";
+        captionText.innerHTML = dots[slideIndex - 1].alt;
+    }
 </script>
 {% endblock jscript %}
