@@ -10,21 +10,21 @@ from collections import namedtuple
 from django.db import connection
 
 
-# Create your views here.
-def admindash(request):
-    return render(request, "siteadmin/AdminDash.html")
-
-
 def namedtuplefetchall(cursor):
     desc = cursor.description
     nt_result = namedtuple('Result', [col[0] for col in desc])
     return [nt_result(*row) for row in cursor.fetchall()]
 
 
+def admindash(request):
+    return render(request, "siteadmin/AdminDash.html")
+
+
 def viewHotels(request):
     cursor = connection.cursor()
     cursor.execute(
-        "select Hotel_Name,Hotel_Location,Hotel_Country,Address,Phone,TotalSentMoney,Percentage from database_hotel")
+        "select Hotel_Name,Hotel_Location,Hotel_Country,Address,Phone,TotalSentMoney,Percentage,Latitude,Longitude"
+        " from database_hotel")
     data = namedtuplefetchall(cursor)
     return render(request, "siteadmin/AdminHotels.html", {'data': data})
 

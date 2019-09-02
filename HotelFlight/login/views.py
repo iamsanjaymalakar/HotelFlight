@@ -32,6 +32,8 @@ def login(request):
             auth.login(request, user)
             if isHotel(user):
                 return HttpResponseRedirect('/adminHotelDash')
+            elif user.is_superuser:
+                return HttpResponseRedirect('/adminDash')
             return HttpResponseRedirect(redirect_to)
         else:
             messages.error(request, 'Username or password not correct')
