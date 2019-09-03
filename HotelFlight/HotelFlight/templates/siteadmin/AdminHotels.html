@@ -48,12 +48,12 @@
     }
 
     #hotelInput {
-        background-image: url('/css/searchicon.png');
-        background-position: 10px 10px;
+        background-image: url({% static 'siteadmin/search.png' %});
+        background-position: 5px 5px;
         background-repeat: no-repeat;
         width: 100%;
         font-size: 16px;
-        padding: 12px 20px 12px 40px;
+        padding: 12px 20px 12px 50px;
         border: 1px solid #ddd;
         margin-bottom: 12px;
     }
@@ -179,7 +179,7 @@
         </div>
     </div>
 </div>
-</div>
+
 
 {% endblock content %}
 
@@ -242,17 +242,34 @@
     }
 
     function searchTable() {
+        let colsToSearch = [0, 1, 2, 3];
         let input = document.getElementById('hotelInput');
         let filter = input.value.toUpperCase();
         let table = document.getElementById('hotelTable');
         let row = table.getElementsByTagName('tr');
         for (let i = 0; i < row.length; i++) {
-            let data0 = row[i].getElementsByTagName("td")[0];
-            let data2 = row[i].getElementsByTagName("td")[2];
-            if (data0 && data2) {
-                let val0 = data0.textContent || data0.innerText;
-                let val2 = data2.textContent || data2.innerText;
-                if (val0.toUpperCase().indexOf(filter) > -1 || val2.toUpperCase().indexOf(filter) > -1) {
+            let data = [];
+            for (let j = 0; j < colsToSearch.length; j++) {
+                data.push(row[i].getElementsByTagName("td")[colsToSearch[j]]);
+            }
+            let isData = true;
+            for (let j = 0; j < data.length; j++) {
+                if (data[j] == null) {
+                    isData = false;
+                }
+            }
+            if (isData) {
+                let val = [];
+                for (let j = 0; j < data.length; j++) {
+                    val.push(data[j].textContent || data[j].innerText);
+                }
+                let displayFlag = false;
+                for (let j = 0; j < val.length; j++) {
+                    if (val[j].toUpperCase().indexOf(filter) > -1) {
+                        displayFlag = true;
+                    }
+                }
+                if (displayFlag) {
                     row[i].style.display = "";
                 } else {
                     row[i].style.display = "none";
