@@ -121,6 +121,10 @@ def searchFlightPage(request):
     adultcount = request.GET.get('adult', '')
     childrenCount = request.GET.get('children', '')
     cursor = connection.cursor()
+    print("searching for: ")
+    print("Source " + source + "Dest: " + dest + "Departure: " + depart)
+    dest = '%' + dest + '%'
+    source = '%' + source + '%'
     # single stop
     # single stop
     cursor.execute("SELECT R.Source, R.Destination, FR.Source_Airport, FR.Destination_Airport, FR.Date, FR.Time, "
@@ -128,8 +132,8 @@ def searchFlightPage(request):
                    "JOIN database_flight_route FR ON R.id = FR.Route_id "
                    "JOIN database_flight F ON F.id = FR.Flight_id "
                    "JOIN database_air_company A ON F.AirCompany_id=A.id "
-                   "WHERE R.Source=%s AND R.Destination=%s AND FR.Date=%s",
-                   [source, dest, depart])
+                   "WHERE (R.Source Like %s OR FR.Source_Airport Like %s ) AND (R.Destination Like %s OR FR.Destination_Airport Like %s) AND FR.Date=%s",
+                   [source, source, dest, dest, depart])
     ssflights = namedtuplefetchall(cursor)
     # multi stop
     cursor.execute("SELECT T.Source as 'Src', T.Source_Airport as 'SrcAirport' , T.Destination as 'Intermediate', "
@@ -143,13 +147,14 @@ def searchFlightPage(request):
                    "T.Price as 'firstPrice',S.Price 'secondPrice',T.TID as 'ID1',S.SID as 'ID2',T.TFID as 'FIDM1',S.SFID as 'FIDM2' "
                    "FROM (SELECT *,FR.id as 'TID',FR.Flight_id as 'TFID' FROM database_route R JOIN database_flight_route FR ON R.id = FR.Route_id "
                    "JOIN database_flight F ON F.id = FR.Flight_id JOIN database_air_company A "
-                   "ON F.AirCompany_id=A.id WHERE R.Source = %s AND FR.Date=%s ) T "
+                   "ON F.AirCompany_id=A.id WHERE (R.Source Like %s OR FR.Source_Airport Like %s) AND FR.Date=%s ) T "
                    "JOIN (SELECT *,FR.id as 'SID',FR.Flight_id as 'SFID' FROM database_route R JOIN database_flight_route FR ON R.id = FR.Route_id "
                    "JOIN database_flight F ON F.id = FR.Flight_id JOIN database_air_company A ON F.AirCompany_id=A.id"
-                   " where R.Destination=%s) S ON S.Source = T.Destination "
-                   "WHERE T.SOURCE = %s AND S.Destination = %s AND T.Date=S.Date AND "
+                   " where R.Destination Like %s OR FR.Destination_Airport Like %s) S ON S.Source = T.Destination "
+                   "WHERE (T.SOURCE Like %s OR T.Source_Airport LIKE %s) AND (S.Destination Like %s OR S.Destination_Airport LIKE %s) AND T.Date=S.Date AND "
                    "(strftime('%%H', T.Time)*60 + strftime('%%M', T.Time) + 30 + T.Duration) < "
-                   "(strftime('%%H', S.Time)*60 + strftime('%%M', S.Time))", [source, depart, dest, source, dest])
+                   "(strftime('%%H', S.Time)*60 + strftime('%%M', S.Time))",
+                   [source, source, depart, dest, dest, source, source, dest, dest])
     msflights = namedtuplefetchall(cursor)
     flightform.fields['children'].initial = int(childrenCount)
     flightform.fields['adult'].initial = int(adultcount)

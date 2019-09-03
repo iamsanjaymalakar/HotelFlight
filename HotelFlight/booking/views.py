@@ -560,8 +560,8 @@ def FlightBookingConfirmationPage(request):
 
             MoneyToRefund = PaidMoney * Percentage_refunding
             cursor.execute(
-                "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled) "
-                "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE, %s, %s,0)",
+                "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled,Status) "
+                "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE, %s, %s,0,0)",
                 [id + 1, MoneyToPay, MoneyToRefund, uid, PaidMoney])
 
             cursor.execute("SELECT MAX(id) from database_flight_booking")
