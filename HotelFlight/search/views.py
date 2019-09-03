@@ -1,15 +1,15 @@
-  from django.shortcuts import render
-  from django.contrib.auth.decorators import login_required
-  from .forms import SearchHotelForm, SearchFlightForm
-  from django.db import connection
-  from collections import namedtuple
-  from datetime import datetime
-  import os
-  from django.utils.encoding import smart_str
-  from geopy import geocoders
-  from geopy.exc import GeocoderServiceError
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .forms import SearchHotelForm, SearchFlightForm
+from django.db import connection
+from collections import namedtuple
+from datetime import datetime
+import os
+from django.utils.encoding import smart_str
+from geopy import geocoders
+from geopy.exc import GeocoderServiceError
 
-  EASY_MAPS_GOOGLE_KEY = "AIzaSyATg_isuGSCHIlJamrxAXfkFDTYhIz7ytM"
+EASY_MAPS_GOOGLE_KEY = "AIzaSyATg_isuGSCHIlJamrxAXfkFDTYhIz7ytM"
 
 
 class Error(Exception):
