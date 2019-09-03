@@ -1,10 +1,31 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .forms import SearchHotelForm, SearchFlightForm
-from django.db import connection
-from collections import namedtuple
-from datetime import datetime
-import os
+  from django.shortcuts import render
+  from django.contrib.auth.decorators import login_required
+  from .forms import SearchHotelForm, SearchFlightForm
+  from django.db import connection
+  from collections import namedtuple
+  from datetime import datetime
+  import os
+  from django.utils.encoding import smart_str
+  from geopy import geocoders
+  from geopy.exc import GeocoderServiceError
+
+  EASY_MAPS_GOOGLE_KEY = "AIzaSyATg_isuGSCHIlJamrxAXfkFDTYhIz7ytM"
+
+
+class Error(Exception):
+    pass
+
+
+def google_v3(address):
+    try:
+        g = geocoders.GoogleV3(EASY_MAPS_GOOGLE_KEY)
+        results = g.geocode(smart_str(address), exactly_one=False)
+        if results is not None:
+            return results[0]
+        else:
+            return "notfound"
+    except (UnboundLocalError, ValueError, GeocoderServiceError) as e:
+        return "notfound"
 
 
 def daysBetween(d1, d2):
@@ -34,13 +55,22 @@ def searchHotelPage(request):
     roomCount = request.GET.get('room', '')
     adultCount = request.GET.get('adult', '')
     dest = '%' + dest + '%'
+    latitudeR = 0
+    longitudeR = 0
+    rr = google_v3(dest)
+    if rr != "notfound":
+        r = rr[1]
+        latitudeR = r[0] * 0.0174533
+        longitudeR = r[1] * 0.0174533
     cursor = connection.cursor()
     cursor.execute("SELECT H.Hotel_Name,H.Address,H.Hotel_Location,H.Hotel_Country,H.Description,HR.FreeRoomCount"
                    " as 'Num', min(HR.Price)*%s as 'Price', H.CompanyAdmin_id as ID , H.id as HID  FROM "
                    "database_hotel_room HR  join database_hotel H on(HR.Hotel_id=H.id) where (lower(H.Hotel_Name) "
                    "Like %s OR lower(H.Hotel_Location) Like %s OR lower(H.Hotel_Country) Like %s OR "
-                   "lower(H.Address) Like %s) and Num >= %s GROUP BY H.Hotel_Name",
-                   [int(roomCount), dest, dest, dest, dest, int(roomCount)])
+                   "lower(H.Address) Like %s OR (acos(sin(%s) * sin(radians(H.Latitude)) + "
+                   "cos(%s) * cos(radians(H.Latitude)) * cos(radians(H.Longitude) - (%s))) * 6371 <= 5)) "
+                   "and Num >= %s GROUP BY H.Hotel_Name",
+                   [int(roomCount), dest, dest, dest, dest, latitudeR, latitudeR, longitudeR, int(roomCount)])
     hotels = namedtuplefetchall(cursor)
     # setting initial values for room and adult
     hotelForm.fields['room'].initial = int(roomCount)
@@ -92,8 +122,9 @@ def searchFlightPage(request):
     childrenCount = request.GET.get('children', '')
     cursor = connection.cursor()
     # single stop
+    # single stop
     cursor.execute("SELECT R.Source, R.Destination, FR.Source_Airport, FR.Destination_Airport, FR.Date, FR.Time, "
-                   "FR.Duration, FR.Price, A.AirCompany_Name, F.Aircraft, F.Airplane_Number FROM database_route R "
+                   "FR.Duration, FR.Price, A.AirCompany_Name, F.Aircraft, F.Airplane_Number,FR.id as 'FRID',FR.id as 'FIDS' FROM database_route R "
                    "JOIN database_flight_route FR ON R.id = FR.Route_id "
                    "JOIN database_flight F ON F.id = FR.Flight_id "
                    "JOIN database_air_company A ON F.AirCompany_id=A.id "
@@ -101,24 +132,27 @@ def searchFlightPage(request):
                    [source, dest, depart])
     ssflights = namedtuplefetchall(cursor)
     # multi stop
-    cursor.execute("SELECT T.Source, T.Source_Airport as 'SrcAirport' , T.Destination as 'Intermediate', "
-                   "T.Destination_Airport as 'InterAirport', S.Destination, S.Destination_Airport as 'DestAirport',"
-                   " T.Date, T.AirCompany_Name as 'SrcCompany', T.Aircraft as 'SrcAircraft', "
+    cursor.execute("SELECT T.Source as 'Src', T.Source_Airport as 'SrcAirport' , T.Destination as 'Intermediate', "
+                   "T.Destination_Airport as 'InterAirport', S.Destination as 'Dest', S.Destination_Airport as 'DestAirport',"
+                   " T.Date as 'Departure', T.AirCompany_Name as 'SrcCompany', T.Aircraft as 'SrcAircraft', "
                    "T.Airplane_Number as 'SrcAirNo', T.Time as 'SrcTime', T.Duration as 'SrcDuration', "
                    "S.AirCompany_Name as 'DestCompany', S.Aircraft as 'DestAircraft', S.Airplane_Number as 'DestAirNo',"
                    " S.Time as 'DestTime', S.Duration as 'DestDuration',"
                    " ((strftime('%%H',S.Time)*60+strftime('%%M',S.Time))- "
                    "strftime('%%H',T.Time)*60-strftime('%%M',T.Time)-T.Duration) as 'TimeDiff',"
-                   "T.Price as 'firstPrice',S.Price 'secondPrice' "
-                   "FROM (SELECT * FROM database_route R JOIN database_flight_route FR ON R.id = FR.Route_id "
+                   "T.Price as 'firstPrice',S.Price 'secondPrice',T.TID as 'ID1',S.SID as 'ID2',T.TFID as 'FIDM1',S.SFID as 'FIDM2' "
+                   "FROM (SELECT *,FR.id as 'TID',FR.Flight_id as 'TFID' FROM database_route R JOIN database_flight_route FR ON R.id = FR.Route_id "
                    "JOIN database_flight F ON F.id = FR.Flight_id JOIN database_air_company A "
-                   "ON F.AirCompany_id=A.id WHERE R.Source = %s AND FR.Date=%s) T "
-                   "JOIN (SELECT * FROM database_route R JOIN database_flight_route FR ON R.id = FR.Route_id "
+                   "ON F.AirCompany_id=A.id WHERE R.Source = %s AND FR.Date=%s ) T "
+                   "JOIN (SELECT *,FR.id as 'SID',FR.Flight_id as 'SFID' FROM database_route R JOIN database_flight_route FR ON R.id = FR.Route_id "
                    "JOIN database_flight F ON F.id = FR.Flight_id JOIN database_air_company A ON F.AirCompany_id=A.id"
                    " where R.Destination=%s) S ON S.Source = T.Destination "
                    "WHERE T.SOURCE = %s AND S.Destination = %s AND T.Date=S.Date AND "
                    "(strftime('%%H', T.Time)*60 + strftime('%%M', T.Time) + 30 + T.Duration) < "
                    "(strftime('%%H', S.Time)*60 + strftime('%%M', S.Time))", [source, depart, dest, source, dest])
     msflights = namedtuplefetchall(cursor)
+    flightform.fields['children'].initial = int(childrenCount)
+    flightform.fields['adult'].initial = int(adultcount)
+
     return render(request, "search/flighttest.html",
                   {'hotelform': hotelform, 'flightform': flightform, 'ssflights': ssflights, 'msflights': msflights})

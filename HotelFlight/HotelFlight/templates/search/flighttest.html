@@ -33,7 +33,8 @@
     </div>
     <div class="">
         <div class="row">
-            <div class="col-lg-3" style="display: flex;min-height: 650px;">
+            <div class="col-lg-3" style="display: flex">
+
                 <div class="search" style="align-items: stretch">
                     <div class="search_inner">
                         <!-- Search Contents -->
@@ -252,8 +253,9 @@
                                     </div>
                                     <div class="col-lg-1" style="margin-left: 25px;">
                                         <div class="button book_button" style="margin-top: 15px;">
-                                            <a href="/check?{{ request.GET.urlencode }}">book</a>
-                                        </div>
+                                                <a href="check?FRID={{ssflight.FRID}}&FIDS={{ssflight.FIDS}}&FIDM1={{msflight.FIDM1}}&FIDM2={{msflight.FIDM2}}&ID2={{msflight.ID2}}&ID1={{msflight.ID1}}& {{ request.GET.urlencode }}">book</a>
+
+                                             </div>
                                     </div>
                                 </div>
                             </div>
@@ -396,7 +398,7 @@
                                             </div>
                                         </div>
                                         <div class="button book_button">
-                                            <a href="/check?{{ request.GET.urlencode }}">book</a>
+                                            <a href="check?FRID={{ssflight.FRID}}&FIDS={{ssflight.FIDS}}&FIDM1={{msflight.FIDM1}}&FIDM2={{msflight.FIDM2}}&ID2={{msflight.ID2}}&ID1={{msflight.ID1}}& {{ request.GET.urlencode }}">book</a>
                                         </div>
                                     </div>
                                 </div>
