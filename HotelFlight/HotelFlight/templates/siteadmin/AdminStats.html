@@ -70,8 +70,11 @@
                         </ul>
                     </nav>
                 </div>
-                <div class="col-lg-1"></div>
-                <div class="col-lg-9" style="width: 60%;">
+                <div class="col-lg-1" style="margin-top: 50pt;">
+                    <button type="button" onclick="hotelClick()">Hotel</button>
+                    <button type="button" onclick="flightClick()">Flight</button>
+                </div>
+                <div class="col-lg-9" style="width: 60%; margin-top: 50pt;">
                     <body>
                     <style>
                         .container {
@@ -81,31 +84,41 @@
                     </style>
                     <body>
 
-                    <button id="renderBtn" , style="width: 5cm; height: 2cm">
-                        Render
-                    </button>
+
                     <div class="container">
                         <div class="row">
                             <div class="col-lg-12">
-                            <canvas id="myChart"></canvas>
-                                </div>
-                            <!--<div class="col-lg-6">
-                                <canvas id="myChart2"></canvas>
-                            </div> -->
+                            <canvas id="myChart" ></canvas>
+                            </div>
+
                         </div>
+                        <div class="row" >
+                            <div class="col-lg-12">
+                            <canvas id="myChart2" ></canvas>
+                            </div>
+
+                        </div>
+
                         <div class="row">
                             <div class="col-lg-12">
-                            <canvas id="myChart2"></canvas>
-                                </div>
+                            <canvas id="myChart3"  style="display:none;" ></canvas>
+                            </div>
+
+                        </div>
+                        <div class="row" >
+                            <div class="col-lg-12">
+                            <canvas id="myChart4" style="display:none;" ></canvas>
+                            </div>
 
                         </div>
                     </div>
 
                     </body>
 
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
-                    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+                    <!--script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script -->
+                    <!--script src="https://code.jquery.com/jquery-3.3.1.min.js"></script -->
                     <!-- <script src="static/siteadmin/js/linechart.js"></script>  -->
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
                     </body>
                     <!--    <div class="mySlides">
                     <div class="numbertext">1/ 4</div>
@@ -158,7 +171,7 @@
 {% block jscript %}
     <script>
 
-        function renderChart(data, labels) {
+        /*function renderChart(data, labels) {
             var ctx = document.getElementById("myChart").getContext('2d');
             var myChart = new Chart(ctx, {
                 type: 'line',
@@ -197,62 +210,179 @@
                 var xLabel = [];
                 {% for row in data %}
                     {
-                        yLabel.push({{ row.0 }});
+                        yLabel.push({{ row.1 }});
                         xLabel.push('{{ row.2 }}');
 
                     }
                 {% endfor %}
 
-                var yLabel2 = [];
-                var xLabel2 = [];
-                {% for row in data2 %}
-                    {
-                        yLabel2.push({{ row.0 }});
-                        xLabel2.push('{{ row.2 }}');
 
-                    }
-                {% endfor %}
                 //dataNew = [20000, 14000, 12000, 15000, 18000, 19000, 22000];
                 //labels =  ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
                 renderChart(yLabel, xLabel);
-                renderChart2(yLabel2, xLabel2);
+                //renderChart2(yLabel2, xLabel2);
                 //renderChart(dataNew, labels);
             }
-        );
+        );*/
+        /*HOTEL GRAPHS*///////
+        /*Line Graph*/
+        var row;
+        var yLabel = [];
+        var xLabel = [];
+        {% for row in data1 %}
+            yLabel.push({{ row.1 }});
+            xLabel.push('{{ row.2 }}');
+        {% endfor %}
 
-        /* var slideIndex = 1;
-        showSlides(slideIndex);
 
-        // Next/previous controls
-        function plusSlides(n) {
-            showSlides(slideIndex += n);
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'line',
+
+            // The data for our dataset
+            data: {
+                //labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+
+
+                labels: xLabel,
+                datasets: [{
+                    label: 'Revenue from hotel booking per day',
+                    backgroundColor: 'rgb(100, 100, 255)',
+                    borderColor: 'rgb(100, 100, 255)',
+                    //data: [0, 10, 5, 2, 20, 30, 45]
+                    data: yLabel
+                }]
+            },
+
+            // Configuration options go here
+            options: {}
+        });
+
+        /*Pie Graph*/
+        var row2;
+        var yLabel2 = [];
+        var xLabel2 = [];
+        var color = [];
+        var i=0;
+        var temp;
+        {% for row2 in data2 %}
+            yLabel2.push({{ row2.1 }});
+            xLabel2.push('{{ row2.2 }}');
+            temp = 150-i*20;
+            //var temp2 = 'rgb(' + str(temp) + ', ' + str(temp) + ', 255),';
+            //color.push(temp2);
+            i=i+1;
+        {% endfor %}
+
+
+        data = {
+                datasets: [{
+                    //data: [10, 20, 30],
+                    data: yLabel2,
+                    backgroundColor: ['rgb(150, 150, 255)', 'rgb(100, 100, 255)', 'rgb(50, 50, 255)', ]
+                    //backgroundColor: color
+                }],
+
+                // These labels appear in the legend and in the tooltips when hovering different arcs
+                labels: xLabel2
+
+
+            };
+        var ctx2 = document.getElementById('myChart2').getContext('2d');
+        var myPieChart = new Chart(ctx2, {
+            type: 'pie',
+            data: data
+        });
+
+        /*FLIGHT GRAPHS*///////
+        /*Line Graph*/
+        var row3;
+        var yLabel3 = [];
+        var xLabel3 = [];
+        {% for row3 in data3 %}
+            yLabel3.push({{ row3.1 }});
+            xLabel3.push('{{ row3.2 }}');
+        {% endfor %}
+        console.log(yLabel3);
+        console.log(xLabel3);
+
+        var ctx3 = document.getElementById('myChart3').getContext('2d');
+        var chart3 = new Chart(ctx3, {
+            // The type of chart we want to create
+            type: 'line',
+
+            // The data for our dataset
+            data: {
+                //labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+
+
+                labels: xLabel3,
+                datasets: [{
+                    label: 'Revenue from flight booking per day',
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    //data: [0, 10, 5, 2, 20, 30, 45]
+                    data: yLabel3
+                }]
+            },
+
+            // Configuration options go here
+            options: {}
+        });
+
+        /*Pie Graph*/
+        var row4;
+        var yLabel4 = [];
+        var xLabel4 = [];
+        var color = [];
+        var i=0;
+        var temp;
+        {% for row4 in data4 %}
+            yLabel4.push({{ row4.1 }});
+            xLabel4.push('{{ row4.2 }}');
+            temp = 150-i*20;
+            //var temp2 = 'rgb(' + str(temp) + ', ' + str(temp) + ', 255),';
+            //color.push(temp2);
+            i=i+1;
+        {% endfor %}
+
+
+        data = {
+                datasets: [{
+                    //data: [10, 20, 30],
+                    data: yLabel4,
+                    backgroundColor: [ 'rgb(255, 120, 150)', 'rgb(255, 90, 120)', ]
+                    //backgroundColor: color
+                }],
+
+                // These labels appear in the legend and in the tooltips when hovering different arcs
+                labels: xLabel4
+
+
+            };
+        var ctx4 = document.getElementById('myChart4').getContext('2d');
+        var myPieChart4 = new Chart(ctx4, {
+            type: 'pie',
+            data: data
+        });
+
+        let input1= document.getElementById('myChart');
+        let input2= document.getElementById('myChart2');
+        let input3= document.getElementById('myChart3');
+        let input4= document.getElementById('myChart4');
+        //input3.style.display="none";
+        function hotelClick() {
+            input1.style.display="";
+            input2.style.display="";
+            input3.style.display="none";
+            input4.style.display="none";
         }
-
-        // Thumbnail image controls
-        function currentSlide(n) {
-            showSlides(slideIndex = n);
+        function flightClick() {
+            input1.style.display="none";
+            input2.style.display="none";
+            input3.style.display="";
+            input4.style.display="";
         }
-
-        function showSlides(n) {
-            var i;
-            var slides = document.getElementsByClassName("mySlides");
-            var dots = document.getElementsByClassName("demo");
-            var captionText = document.getElementById("caption");
-            if (n > slides.length) {
-                slideIndex = 1
-            }
-            if (n < 1) {
-                slideIndex = slides.length
-            }
-            for (i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none";
-            }
-            for (i = 0; i < dots.length; i++) {
-                dots[i].className = dots[i].className.replace(" active", "");
-            }
-            slides[slideIndex - 1].style.display = "block";
-            dots[slideIndex - 1].className += " active";
-            captionText.innerHTML = dots[slideIndex - 1].alt;
-        } */
     </script>
 {% endblock jscript %}

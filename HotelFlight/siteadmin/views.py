@@ -152,6 +152,7 @@ def approveFlightBookingRedirect(request):
     return HttpResponseRedirect('approveFlightBookings')
 
 
+	
 def viewStats(request):
     cursor = connection.cursor()
     cursor.execute(
