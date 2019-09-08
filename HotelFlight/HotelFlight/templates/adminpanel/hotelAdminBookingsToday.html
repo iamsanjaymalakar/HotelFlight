@@ -210,7 +210,7 @@
             ("0" + new Date().getDate()).slice(-2);
         let dp = $('#datep').datepicker({
             uiLibrary: 'bootstrap4',
-            value: today,
+            value: {% if request.GET.date %}'{{ request.GET.date }}'{% else %}today{% endif %},
             minDate: today,
             format: 'yyyy-mm-dd',
             size: 'small'

@@ -152,7 +152,6 @@ def approveFlightBookingRedirect(request):
     return HttpResponseRedirect('approveFlightBookings')
 
 
-	
 def viewStats(request):
     cursor = connection.cursor()
     cursor.execute(
@@ -160,11 +159,11 @@ def viewStats(request):
         "FROM database_booking B JOIN database_hotel_booking HB ON B.id=HB.Booking_id "
         "JOIN database_hotel_room HR ON HB.Hotel_Room_id=HR.id "
         "GROUP BY B.DateOfBooking")
-    results = cursor.fetchall()
+    results1 = cursor.fetchall()
     totalHotelBooking = []
     totalHotelRevenue = []
     dates = []
-    for row in results:
+    for row in results1:
         print(row)
         totalHotelBooking.append(row[0])
         totalHotelRevenue.append(row[1])
@@ -172,8 +171,17 @@ def viewStats(request):
     data = namedtuplefetchall(cursor)
     print("Data1")
     print(data)
-    print(results[0])
-    # print(totalHotelBooking)
+    print(results1)
+    print(results1[0][2])
+
+    cursor.execute(
+        "SELECT count(B.id) as 'TotalBooking', sum(HR.Price)*.05 as 'TotalRevenue' , H.Hotel_Name as 'HotelName' "
+        "FROM database_booking B JOIN database_hotel_booking HB ON B.id=HB.Booking_id "
+        "JOIN database_hotel_room HR ON HB.Hotel_Room_id=HR.id "
+        "JOIN database_hotel H ON HR.Hotel_id=H.id "
+        "GROUP BY H.id ORDER BY sum(HR.Price) ")
+    results2 = cursor.fetchall();
+    print(results2)
 
     '''y_pos = np.arange(len(totalHotelBooking))
     plt.bar(y_pos, totalHotelBooking, align='center', color="skyblue")
@@ -197,51 +205,28 @@ def viewStats(request):
         "FROM database_booking B JOIN database_flight_booking FB ON B.id=FB.Booking_id "
         "JOIN database_flight_route FR ON FB.Flight_id=FR.id "
         "GROUP BY B.DateOfBooking")
-    results1 = cursor.fetchall()
-    totalFlightBooking = []
-    totalFlightRevenue = []
-    dates = []
-    for row in results1:
-        print(row)
-        totalFlightBooking.append(row[0])
-        totalFlightRevenue.append(row[1])
-        dates.append(row[2])
+    results3 = cursor.fetchall()
+
     data = namedtuplefetchall(cursor)
-    print("Data2")
+    print("Data3")
     print(data)
-    print(results1)
+    print(results3)
     # print(totalHotelBooking)
 
-    '''y_pos = np.arange(len(totalFlightBooking))
-    plt.bar(y_pos, totalFlightBooking, align='center', color="skyblue")
-    plt.xticks(y_pos, dates)
-    plt.xlabel('Date')
-    plt.ylabel('Flight Bookings')
-    plt.title('Flight Booking per day')
-    plt.savefig('./HotelFlight/static/siteadmin/barPlotFlightBooking.png')
+    cursor.execute(
+        "SELECT count(B.id) as 'TotalBooking', sum(FR.Price)*.05 as 'TotalRevenue' , AC.AirCompany_Name as 'CompanyName' "
+        "FROM database_booking B JOIN database_flight_booking FB ON B.id=FB.Booking_id "
+        "JOIN database_flight_route FR ON FB.Flight_id=FR.id "
+        "JOIN database_flight F ON FR.Flight_id=F.id "
+        "JOIN database_air_company AC ON F.AirCompany_id=AC.id "
+        "GROUP BY AC.id "
+        "ORDER BY sum(FR.Price)")
+    results4 = cursor.fetchall()
 
-    y_pos = np.arange(len(totalFlightRevenue))
-    plt.bar(y_pos, totalFlightRevenue, align='center', color="lightgreen")
-    plt.xticks(y_pos, dates)
-    plt.xlabel('Date')
-    plt.ylabel('Revenue from Flight bookings')
-    plt.title('Revenue from Flight bookings per day')
-    plt.savefig('./HotelFlight/static/siteadmin/barPlotFlightRevenue.png')
+    data = namedtuplefetchall(cursor)
+    print("Data3")
+    print(data)
+    print(results4)
 
-
-
-    # Data
-    x_range = dates
-    y1_range = totalHotelRevenue
-    y2_range = totalFlightRevenue
-    df = pd.DataFrame({'x': x_range, 'y1': y1_range, 'y2': y2_range})
-
-    # multiple line plot
-    plt.plot('x', 'y1', data=df, marker='o', markerfacecolor='blue', markersize=5, color='skyblue', linewidth=2)
-    plt.plot('x', 'y2', data=df, marker='o', color='olive', linewidth=2)
-
-    plt.legend()
-    plt.savefig('./HotelFlight/static/siteadmin/linePlot.png')
-    #plt.show()'''
-
-    return render(request, "siteadmin/AdminStats.html", {'data': results, 'data2': results1})
+    return render(request, "siteadmin/AdminStats.html",
+                  {'data1': results1, 'data2': results2, 'data3': results3, 'data4': results4})

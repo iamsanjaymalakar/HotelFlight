@@ -88,7 +88,7 @@ def hoteladminbookingstoday(request):
             "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
             "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
             "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
-            "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s "
+            "on (R.id=HR.Room_id) where HB.Checkin_Date=CURRENT_DATE and HR.Hotel_id=%s "
             "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
     else:
         cursor.execute(
@@ -97,7 +97,7 @@ def hoteladminbookingstoday(request):
             "HR.Room_id,HB.TotalRooms,R.RoomType,R.SingleBedCount,R.DoubleBedCount from database_hotel_booking HB "
             "join database_hotel_room HR on(HR.id=HB.Hotel_Room_id) join database_booking B on(HB.Booking_id=B.id) "
             "join auth_user U on(U.id=B.User_id) join database_profile P on(P.user_id=U.id) join database_room R "
-            "on (R.id=HR.Room_id) where HB.Checkin_Date>=%s and HR.Hotel_id=%s "
+            "on (R.id=HR.Room_id) where HB.Checkin_Date=%s and HR.Hotel_id=%s "
             "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [date, hotel.id])
     data = namedtuplefetchall(cursor)
     return render(request, "adminpanel/hotelAdminBookingsToday.html", {'data': data})

@@ -163,7 +163,7 @@
                                                             {% with hotel.uid|stringformat:"i" as ID and room.roomID|stringformat:"i" as rID %}
                                                                 {% for firstImage in roomImages %}
                                                                     {% if forloop.first %}
-                                                                        <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/'|add:firstImage %}" alt="" width="100%" height="20%">
+                                                                        <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/'|add:firstImage %}" alt="" width="100%" height="100%">
                                                                     {% endif %}
                                                                 {% endfor %}
                                                             {% endwith %}

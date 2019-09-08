@@ -230,6 +230,8 @@
         var yLabel = [];
         var xLabel = [];
         {% for row in data1 %}
+            console.log('indside');
+            console.log('{{ row.1 }}');
             yLabel.push({{ row.1 }});
             xLabel.push('{{ row.2 }}');
         {% endfor %}
