@@ -29,7 +29,7 @@
                     {{ form.non_field_errors }}
                     {{ form.errors }}
                     <h2 class="form-title">Create account</h2>
-                    {% for field in userform %}
+                    {% for field in userForm %}
                     <div class="form-group">
                         {% if field.errors %}
                         <div class="isa_error">
@@ -48,7 +48,7 @@
                     {% endfor %}
 
 
-                    {% for field in profileform %}
+                    {% for field in profileForm %}
                     <div class="form-group">
                         {{ field.errors }}
                         {% render_field field class="form-input" placeholder=field.label %}

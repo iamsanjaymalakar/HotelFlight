@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Bookings | {{ request.user }}{% endblock title %}
+{% block title %}Hotel Bookings | {{ request.user }}{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -81,13 +81,15 @@
                         <div class="sidebar-header">
                             <h3>Hotel Bookings</h3>
                         </div>
-
                         <ul class="list-unstyled components">
-                            <p>Bookings</p>
+                            <p>Hotel Bookings</p>
                             <li>
-                                <a href="">Update Profile</a>
+                                <a href="{% url 'profile' %}">Edit Profile</a>
                             </li>
-                            <li class="notification">
+                            <li>
+                                <a href="{% url 'password' %}">Change Password</a>
+                            </li>
+                            <li>
                                 <a href="{% url 'userNotifications' %}">
                                     Notifications
                                     {% if count > 0 %}

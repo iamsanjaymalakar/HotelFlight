@@ -1,19 +1,24 @@
 from django.shortcuts import render
-from .forms import ProfileForm, UserCreateForm
+from .forms import ProfileForm, UserCreateForm, UpdateProfileForm
 from django.http import HttpResponseRedirect
 from django.contrib import auth, messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from database import models
 from django.db import connection
 from collections import namedtuple
 from database.models import Booking, Cancellation_Log
 from database.models import *
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 # Create your views here.
 def isHotel(user):
     return user.groups.filter(name='Hotel').exists()
+
+
+def isFlight(user):
+    return user.groups.filter(name='Flight').exists()
 
 
 def namedtuplefetchall(cursor):
@@ -23,40 +28,41 @@ def namedtuplefetchall(cursor):
 
 
 def login(request):
-    redirect_to = request.GET.get('next', '')
+    redirectTo = request.GET.get('next', '')
     if request.method == 'POST':
-        Username = request.POST.get("username", "")
-        Password = request.POST.get("pass", "")
-        user = auth.authenticate(request, username=Username, password=Password)
+        username = request.POST.get("username", "")
+        password = request.POST.get("pass", "")
+        user = auth.authenticate(request, username=username, password=password)
         if user is not None:
             auth.login(request, user)
             if isHotel(user):
                 return HttpResponseRedirect('/adminHotelDash')
+            elif isFlight(user):
+                return HttpResponseRedirect('/adminAirlinesDash')
             elif user.is_superuser:
                 return HttpResponseRedirect('/adminDash')
-            return HttpResponseRedirect(redirect_to)
+            return HttpResponseRedirect(redirectTo)
         else:
             messages.error(request, 'Username or password not correct')
     return render(request, "login/login.html")
 
 
 def reg(request):
-    submitted = False
     if request.method == 'POST':
-        userform = UserCreateForm(request.POST)
-        profileform = ProfileForm(request.POST)
-        if userform.is_valid() and profileform.is_valid():
-            user = userform.save()
-            profile = profileform.save(commit=False)
+        userForm = UserCreateForm(request.POST)
+        profileForm = ProfileForm(request.POST)
+        if userForm.is_valid() and profileForm.is_valid():
+            user = userForm.save()
+            profile = profileForm.save(commit=False)
             profile.user = user
             profile.save()
             return HttpResponseRedirect('/login?next=/')
         else:
-            print(userform.errors)
+            print(userForm.errors)
     else:
-        userform = UserCreateForm()
-        profileform = ProfileForm()
-    return render(request, "login/reg.html", {'userform': userform, 'profileform': profileform, 'submitted': submitted})
+        userForm = UserCreateForm()
+        profileForm = ProfileForm()
+    return render(request, "login/reg.html", {'userForm': userForm, 'profileForm': profileForm})
 
 
 def logoutUser(request):
@@ -80,7 +86,7 @@ def userbookings(request):
     data = namedtuplefetchall(cursor)
     # notifications count
     count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
-    return render(request, "login/userBookings.html", {'data': data, 'count': count})
+    return render(request,  "login/userBookings.html", {'data': data, 'count': count})
 
 
 def usernotifications(request):
@@ -224,3 +230,48 @@ def flightbookingcancelredirect(request):
                    "SET TotalSentMoney = TotalSentMoney - %s "
                    "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminID])
     return HttpResponseRedirect('userflightbookings')
+
+
+def userprofile(request):
+    userObject = User.objects.get(id=request.user.id)
+    profileObject = Profile.objects.get(user=request.user)
+    if request.method == 'POST':
+        profileForm = UpdateProfileForm(request.POST)
+        if profileForm.is_valid():
+            # updating user first
+            userObject.first_name = profileForm.cleaned_data['firstName']
+            userObject.last_name = profileForm.cleaned_data['lastName']
+            userObject.email = profileForm.cleaned_data['email']
+            userObject.save()
+            # updating profile
+            profileObject.Phone = profileForm.cleaned_data['phone']
+            profileObject.Address = profileForm.cleaned_data['address']
+            profileObject.save()
+            messages.success(request, 'Your profile was successfully updated!')
+        else:
+            print(profileForm.errors)
+    else:
+        profileForm = UpdateProfileForm()
+    # notifications count
+    count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
+    return render(request, "login/profile.html",
+                  {'profileForm': profileForm, 'profileObject': profileObject, 'count': count})
+
+
+def userpassword(request):
+    userObject = User.objects.get(id=request.user.id)
+    profileObject = Profile.objects.get(user=request.user)
+    if request.method == 'POST':
+        passwordForm = PasswordChangeForm(request.user, request.POST)
+        if passwordForm.is_valid():
+            user = passwordForm.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Your password was successfully updated!')
+        else:
+            print(passwordForm.errors)
+    else:
+        passwordForm = PasswordChangeForm(request.user)
+    # notifications count
+    count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
+    return render(request, "login/password.html",
+                  {'passwordForm': passwordForm, 'count': count})

@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Bookings | {{ request.user }}{% endblock title %}
+{% block title %}Flight Bookings | {{ request.user }}{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -65,13 +65,15 @@
                         <div class="sidebar-header">
                             <h3>Flight Bookings</h3>
                         </div>
-
                         <ul class="list-unstyled components">
                             <p>Flight Bookings</p>
                             <li>
-                                <a href="">Update Profile</a>
+                                <a href="{% url 'profile' %}">Edit Profile</a>
                             </li>
-                             <li class="notification">
+                            <li>
+                                <a href="{% url 'password' %}">Change Password</a>
+                            </li>
+                            <li>
                                 <a href="{% url 'userNotifications' %}">
                                     Notifications
                                     {% if count > 0 %}
@@ -134,7 +136,7 @@
                             {% for datum in data %}
                                 <tr align="center">
                                     <td>
-                                       {{ datum.AirCompany_Name }}
+                                        {{ datum.AirCompany_Name }}
                                     </td>
                                     <td>
                                         Aircraft Number : {{ datum.Plane }}<br>
@@ -172,10 +174,12 @@
                                         {{ datum.RefundedMoneyUponCancellation }}৳
                                     </td>
                                     {% now "Y-m-d" as todays_date %}
-                                    {% if datum.DOF|date:"Y-m-d" > todays_date  %}
-                                    <td>
-                                        <a href="{% url 'userFlightBookingCancel' %}?bid={{ datum.bookingid }}"><button>Cancel</button></a>
-                                    </td>
+                                    {% if datum.DOF|date:"Y-m-d" > todays_date %}
+                                        <td>
+                                            <a href="{% url 'userFlightBookingCancel' %}?bid={{ datum.bookingid }}">
+                                                <button>Cancel</button>
+                                            </a>
+                                        </td>
                                     {% endif %}
                                 </tr>
                             {% endfor %}

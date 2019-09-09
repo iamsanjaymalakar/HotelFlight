@@ -12,4 +12,6 @@ urlpatterns = [
     path('userflightbookingcancel', views.flightbookingcancel, name='userFlightBookingCancel'),
     path('bookingcancelredirect', views.bookingcancelredirect, name='bookingCancelRedirect'),
     path('flightbookingcancelredirect', views.flightbookingcancelredirect, name='flightBookingCancelRedirect'),
+    path('profile', views.userprofile, name='profile'),
+    path('password', views.userpassword, name='password'),
 ]

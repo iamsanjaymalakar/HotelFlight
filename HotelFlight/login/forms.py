@@ -27,3 +27,11 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ('Phone', 'Address')
+
+
+class UpdateProfileForm(forms.Form):
+    firstName = forms.CharField(required=True, max_length=20)
+    lastName = forms.CharField(required=True, max_length=20)
+    email = forms.EmailField(required=True)
+    phone = forms.IntegerField(required=True)
+    address = forms.CharField(required=True, max_length=100)
