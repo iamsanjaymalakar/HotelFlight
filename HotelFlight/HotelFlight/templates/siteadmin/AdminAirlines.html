@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Bookings | {{ request.user }}{% endblock title %}
+{% block title %}Airlines | Admin{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -68,34 +68,56 @@
 
                         <ul class="list-unstyled components">
                             <p>Airlines</p>
-                          <li class="">
+                            <li>
                                 <a href="{% url 'SiteAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'HotelList' %}">View Hotels</a>
                             </li>
                             <li class="active">
                                 <a href="{% url 'AirlinesList' %}">View Airlines</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'HotelPaymentLog' %}">View Payment Log for Hotel Booking</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'AirlinesPaymentLog' %}">View Payment Log for Flight Booking</a>
                             </li>
-                            <li class="">
-                                <a href="{% url 'ApproveHotelBooking' %}">Approve Hotel Booking</a>
+                            <li class="notification">
+                                <a href="{% url 'ApproveHotelBooking' %}">
+                                    Approve Hotel Booking
+                                    {% if hotelApproveCount > 0 %}
+                                        <span class="badge">{{ hotelApproveCount }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
-
-                            <li class="">
-                                <a href="{% url 'ApproveFlightBooking' %}">Approve Flight Booking</a>
+                            <li class="notification">
+                                <a href="{% url 'ApproveFlightBooking' %}">
+                                    Approve Flight Booking
+                                    {% if flightApproveCount > 0 %}
+                                        <span class="badge">{{ flightApproveCount }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
-                            <li class="">
+                            <li class="notification">
+                                <a href="{% url 'ApproveCancelHotelBooking' %}">
+                                    Approve Cancellation of Hotel Booking
+                                    {% if hotelCancelCount > 0 %}
+                                        <span class="badge">{{ hotelCancelCount }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li class="notification">
+                                <a href="{% url 'ApproveCancelFlightBooking' %}">
+                                    Approve Cancellation of Flight Booking
+                                    {% if flightCancelCount > 0 %}
+                                        <span class="badge">{{ flightCancelCount }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{% url 'Statistics' %}">View Stats</a>
                             </li>
-
-
-
                         </ul>
                     </nav>
                 </div>

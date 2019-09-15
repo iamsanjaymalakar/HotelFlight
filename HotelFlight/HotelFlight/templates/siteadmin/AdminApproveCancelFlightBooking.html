@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Approve Hotel Bookings | Admin{% endblock title %}
+{% block title %}Flight Cancellation Approval | Admin{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -66,7 +66,7 @@
                             <h3>Options</h3>
                         </div>
                         <ul class="list-unstyled components">
-                            <p>Approve Hotel Bookings</p>
+                            <p>Flight Cancellation Approval</p>
                             <li>
                                 <a href="{% url 'SiteAdminDash' %}">Dashboard</a>
                             </li>
@@ -82,7 +82,7 @@
                             <li>
                                 <a href="{% url 'AirlinesPaymentLog' %}">View Payment Log for Flight Booking</a>
                             </li>
-                            <li class="active notification">
+                            <li class="notification">
                                 <a href="{% url 'ApproveHotelBooking' %}">
                                     Approve Hotel Booking
                                     {% if hotelApproveCount > 0 %}
@@ -106,7 +106,7 @@
                                     {% endif %}
                                 </a>
                             </li>
-                            <li class="notification">
+                            <li class="active notification">
                                 <a href="{% url 'ApproveCancelFlightBooking' %}">
                                     Approve Cancellation of Flight Booking
                                     {% if flightCancelCount > 0 %}
@@ -122,43 +122,41 @@
                 </div>
                 <div class="col-lg-10" style="padding-right: 30px;">
                     <div class="rooms" style="margin-top: 20px;">
+
                         <!-- Room -->
                         <table id="roomstable" width="100%">
                             <tr align="center">
                                 <th>
                                     Booked by
                                 </th>
-                                <th width="13%">
-                                    Hotel Name
+                                <th>
+                                    Airlines
                                 </th>
-                                <th width="13%">
-                                    Room Type
-                                </th>
-                                <th width="13%">
-                                    Unit Price
-                                </th>
-                                <th width="15%">
-                                   Pending Payment
-                                </th>
-                                <th width="15%">
-                                   Advanced Payment
-                                </th>
-                                <th width="15%">
-                                    Money to be refunded to the customer on booking cancellation
-                                </th>
-                                <th width="15%">
-                                    Date of Booking
-                                </th>
-                                <th width="15%">
-                                   Checkin Date
+                                <th width="30%">
+                                    Flight details
                                 </th>
                                 <th>
-                                    Checkout Date
+                                    Route details
                                 </th>
-                                <th width="13%">
-                                    Total Rooms Booked
+                                <th>
+                                    Price
                                 </th>
-                                <th width="13%">
+                                <th>
+                                    Pending Payment
+                                </th>
+                                <th>
+                                    Advanced Payment
+                                </th>
+                                <th>
+                                    Money to be refunded upon cancellation
+                                </th>
+                                <th>
+                                    Date of Booking
+                                </th>
+                                <th>
+                                    Total Seats Booked
+                                </th>
+                                <th>
                                     Approve
                                 </th>
                             </tr>
@@ -171,38 +169,43 @@
                                         {{ datum.addr }} <br>
                                     </td>
                                     <td>
-                                        {{ datum.Hotel_Name }}
+                                        {{ datum.AirCompany_Name }}
                                     </td>
                                     <td>
-                                        {{ datum.RoomType }}
+                                        Airplane number: {{ datum.Plane }} <br>
+                                        Airplane model: {{ datum.Model }} <br>
+                                        Date : {{ datum.DOF }}<br>
+                                        Time : {{ datum.Time }}<br>
+                                        Duration(in minutes) : {{ datum.Duration }}
+                                    </td>
+                                    <td>
+                                        {{ datum.SRC }}<br>
+                                        to<br>
+                                        {{ datum.DEST }}
                                     </td>
                                     <td>
                                         {{ datum.Price }}
                                     </td>
                                     <td>
-                                        {{ datum.MoneyToPay }}
+                                        {{ datum.Pending }}
                                     </td>
                                     <td>
-                                        {{ datum.PaidMoney }}
+                                        {{ datum.Paid }}
                                     </td>
                                     <td>
-                                        {{ datum.MoneyToRefund }}
+                                        {{ datum.RefundedMoneyUponCancellation }}
                                     </td>
                                     <td>
                                         {{ datum.DOB }}
                                     </td>
                                     <td>
-                                        {{ datum.CheckinDate }}
+                                        {{ datum.TotalSeats }}
                                     </td>
                                     <td>
-                                        {{ datum.CheckoutDate }}
-                                    </td>
-                                     <td>
-                                        {{ datum.TotalRooms }}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'ApproveHotelBookingRedirect' %}?bookingID={{ datum.bookingID }}">
-                                        <button class="button search_button" style="margin: 0px;">Approve</button>
+                                        <a href="{% url 'ApproveCancelFlightBookingRedirect' %}?bookingID={{ datum.bookingID }}&fid={{ datum.fid }}">
+                                            <button class="button search_button" style="margin: 0px;">Approve
+                                                Cancellation
+                                            </button>
                                         </a>
                                     </td>
                                 </tr>
@@ -214,4 +217,4 @@
         </div>
     </div>
 
-{% endblock content %}
+{% endblock content %} 

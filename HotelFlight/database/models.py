@@ -1,6 +1,7 @@
 import re
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
 
 
 # Create your models here.
@@ -123,6 +124,7 @@ class Hotel_Booking(models.Model):
     Checkout_Date = models.DateField(auto_now=False, auto_now_add=False, null=True)
     TotalRooms = models.PositiveIntegerField(default=1, null=True)
     isApproved = models.BooleanField(null=True, default=False)
+    isCancellationApproved = models.BooleanField(null=True, default=False)
 
 
 class Flight_Booking(models.Model):
@@ -130,11 +132,15 @@ class Flight_Booking(models.Model):
     Flight = models.ForeignKey(Flight_Route, on_delete=models.CASCADE, null=True)
     TotalSeats = models.PositiveIntegerField(default=1, null=True)
     isApproved = models.BooleanField(null=True, default=False)
+    isCancellationApproved = models.BooleanField(null=True, default=False)
 
 
 class Payment_Log(models.Model):
     Admin = models.ForeignKey(User, on_delete=models.CASCADE)
     Booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    Timestamp = models.DateTimeField(default=datetime.now, blank=True)
+    # True for credit(money goes from user to hotel/airlines),False for debit (money goes from hotel/airlines to user)
+    Flag = models.BooleanField(null=True, default=True)
 
 
 class Cancellation_Log(models.Model):

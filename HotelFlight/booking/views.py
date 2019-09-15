@@ -119,7 +119,8 @@ def BookingConfirmationPage(request):
                             Status=False)
     bookingObject.save()
     hotelBookingObject = Hotel_Booking(Booking=bookingObject, Hotel_Room_id=hotelRoomID, Checkin_Date=checkIn,
-                                       Checkout_Date=checkOut, TotalRooms=roomCount, isApproved=False)
+                                       Checkout_Date=checkOut, TotalRooms=roomCount, isApproved=False,
+                                       isCancellationApproved=False)
     hotelBookingObject.save()
     hotelRoomObject = Hotel_Room.objects.get(id=hotelRoomID)
     hotelRoomObject.FreeRoomCount -= int(roomCount)
@@ -478,8 +479,9 @@ def FlightBookingConfirmationPage(request):
             new_id = 1
         else:
             new_id = results[0] + 1
-        cursor.execute("INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved) "
-                       "VALUES (%s,%s,%s,%s,0)", [new_id, id, frid, adultCount])
+        cursor.execute(
+            "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
+            "VALUES (%s,%s,%s,%s,0,0)", [new_id, id, frid, adultCount])
         cursor.execute("UPDATE database_flight_route "
                        "SET TotalSeatsBooked = TotalSeatsBooked + %s "
                        "WHERE id=%s", [adultCount, frid])
@@ -572,11 +574,13 @@ def FlightBookingConfirmationPage(request):
                 new_id = 1
             else:
                 new_id = results[0] + 1
-            cursor.execute("INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved) "
-                           "VALUES (%s,%s,%s,%s,0)", [new_id, id, id1, adultCount])
+            cursor.execute(
+                "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
+                "VALUES (%s,%s,%s,%s,0,0)", [new_id, id, id1, adultCount])
             new_id = new_id + 1
-            cursor.execute("INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved) "
-                           "VALUES (%s,%s,%s,%s,0)", [new_id, id + 1, id2, adultCount])
+            cursor.execute(
+                "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
+                "VALUES (%s,%s,%s,%s,0,0)", [new_id, id + 1, id2, adultCount])
             cursor.execute("UPDATE database_flight_route "
                            "SET TotalSeatsBooked = TotalSeatsBooked + %s "
                            "WHERE id=%s", [adultCount, id1])

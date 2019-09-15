@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Bookings | {{ request.user }}{% endblock title %}
+{% block title %}Payment Log for Hotel Bookings| Admin{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -52,11 +52,9 @@
 {% block content %}
 
     <div class="offers">
-
         <div class="hero-image"
              style="height:24.5%;background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url({% static 'search/images/single_background.jpg' %})">
         </div>
-
         <!-- Sidebar -->
         <div class="">
             <div class="row">
@@ -65,43 +63,63 @@
                         <div class="sidebar-header">
                             <h3>Options</h3>
                         </div>
-
-
                         <ul class="list-unstyled components">
-                            <p>Payment Log for Hotel Booking</p>
-                            <li class="">
+                            <p>Payment Log for Hotel Bookings</p>
+                            <li>
                                 <a href="{% url 'SiteAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'HotelList' %}">View Hotels</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'AirlinesList' %}">View Airlines</a>
                             </li>
                             <li class="active">
                                 <a href="{% url 'HotelPaymentLog' %}">View Payment Log for Hotel Booking</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'AirlinesPaymentLog' %}">View Payment Log for Flight Booking</a>
                             </li>
-                            <li class="">
-                                <a href="{% url 'ApproveHotelBooking' %}">Approve Hotel Booking</a>
+                            <li class="notification">
+                                <a href="{% url 'ApproveHotelBooking' %}">
+                                    Approve Hotel Booking
+                                    {% if hotelApproveCount > 0 %}
+                                        <span class="badge">{{ hotelApproveCount }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
-
-                            <li class="">
-                                <a href="{% url 'ApproveFlightBooking' %}">Approve Flight Booking</a>
+                            <li class="notification">
+                                <a href="{% url 'ApproveFlightBooking' %}">
+                                    Approve Flight Booking
+                                    {% if flightApproveCount > 0 %}
+                                        <span class="badge">{{ flightApproveCount }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
-                            <li class="">
+                            <li class="notification">
+                                <a href="{% url 'ApproveCancelHotelBooking' %}">
+                                    Approve Cancellation of Hotel Booking
+                                    {% if hotelCancelCount > 0 %}
+                                        <span class="badge">{{ hotelCancelCount }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li class="notification">
+                                <a href="{% url 'ApproveCancelFlightBooking' %}">
+                                    Approve Cancellation of Flight Booking
+                                    {% if flightCancelCount > 0 %}
+                                        <span class="badge">{{ flightCancelCount }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{% url 'Statistics' %}">View Stats</a>
                             </li>
-
-
                         </ul>
                     </nav>
                 </div>
                 <div class="col-lg-10" style="padding-right: 35px;">
                     <div class="rooms" style="margin-top: 20px;">
-
                         <!-- Room -->
                         <table id="roomstable" width="100%">
                             <tr align="center">
@@ -115,10 +133,10 @@
                                     Unit Price
                                 </th>
                                 <th width="15%">
-                                   Pending Payment
+                                    Pending Payment
                                 </th>
                                 <th width="15%">
-                                   Advanced Payment
+                                    Advanced Payment
                                 </th>
                                 <th width="15%">
                                     Money to be refunded to the customer on booking cancellation
@@ -127,7 +145,7 @@
                                     Date of Booking
                                 </th>
                                 <th width="15%">
-                                   Checkin Date
+                                    Checkin Date
                                 </th>
                                 <th>
                                     Checkout Date
@@ -135,10 +153,11 @@
                                 <th width="13%">
                                     Total Rooms Booked
                                 </th>
-
+                                <th width="13%">
+                                    Transaction Type
+                                </th>
                             </tr>
                             {% for datum in data %}
-
                                 <tr align="center">
                                     <td>
                                         {{ datum.Hotel_Name }}
@@ -167,10 +186,14 @@
                                     <td>
                                         {{ datum.CheckoutDate }}
                                     </td>
-                                     <td>
+                                    <td>
                                         {{ datum.TotalRooms }}
                                     </td>
-
+                                    <td>
+                                        {% if datum.Flag == 1 %} Credit
+                                        {% elif datum.Flag == 0 %} Debit
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </table>
@@ -178,7 +201,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
 {% endblock content %}

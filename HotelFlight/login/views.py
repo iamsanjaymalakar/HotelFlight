@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from database import models
 from django.db import connection
 from collections import namedtuple
-from database.models import Booking, Cancellation_Log
 from database.models import *
 from django.contrib.auth.forms import PasswordChangeForm
 
@@ -86,7 +85,7 @@ def userbookings(request):
     data = namedtuplefetchall(cursor)
     # notifications count
     count = BookingLog.objects.filter(Actor=0, notified=0, Booking__User=request.user).count()
-    return render(request,  "login/userBookings.html", {'data': data, 'count': count})
+    return render(request, "login/userBookings.html", {'data': data, 'count': count})
 
 
 def usernotifications(request):
@@ -156,9 +155,11 @@ def bookingcancelredirect(request):
     except BookingLog.DoesNotExist:
         logObject = BookingLog(Actor=1, Message='', notified=0, Admin_id=adminID, Booking_id=int(bookingID))
         logObject.save()
-    hotelObject = Hotel.objects.get(CompanyAdmin=adminID)
-    hotelObject.TotalSentMoney -= bookingObject.MoneyToRefund
-    hotelObject.save()
+    # increase the number of free rooms
+    hotelBookingObject = Hotel_Booking.objects.get(Booking=bookingObject)
+    hotelRoomObject = hotelBookingObject.Hotel_Room
+    hotelRoomObject.FreeRoomCount += hotelBookingObject.TotalRooms
+    hotelRoomObject.save()
     return HttpResponseRedirect('userbookings')
 
 
@@ -219,16 +220,10 @@ def flightbookingcancelredirect(request):
     except BookingLog.DoesNotExist:
         logObject = BookingLog(Actor=1, Message='', notified=0, Admin_id=adminID, Booking_id=int(bookingID))
         logObject.save()
-    cancelobject = Cancellation_Log(Admin=User.objects.get(id=adminID), Booking=Booking.objects.get(id=bookingID),
-                                    notified=False)
-    cancelobject.save()
-    cursor = connection.cursor()
-    cursor.execute("SELECT MoneyToRefund FROM database_booking where id=%s", [bookingID])
-    results = cursor.fetchone()
-    MoneyToDeduct = results[0]
-    cursor.execute("UPDATE database_air_company "
-                   "SET TotalSentMoney = TotalSentMoney - %s "
-                   "WHERE CompanyAdmin_id=%s", [MoneyToDeduct, adminID])
+    flightbookingobject = Flight_Booking.objects.get(Booking=bookingObject)
+    flightrouteobject = flightbookingobject.Flight
+    flightrouteobject.TotalSeatsBooked = flightrouteobject.TotalSeatsBooked - flightbookingobject.TotalSeats
+    flightrouteobject.save()
     return HttpResponseRedirect('userflightbookings')
 
 
@@ -259,8 +254,6 @@ def userprofile(request):
 
 
 def userpassword(request):
-    userObject = User.objects.get(id=request.user.id)
-    profileObject = Profile.objects.get(user=request.user)
     if request.method == 'POST':
         passwordForm = PasswordChangeForm(request.user, request.POST)
         if passwordForm.is_valid():

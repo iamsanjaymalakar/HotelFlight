@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Dashboard | {{ request.user }}{% endblock title %}
+{% block title %}Dashboard | Admin{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -25,11 +25,9 @@
 {% block content %}
 
     <div class="offers">
-
         <div class="hero-image"
              style="height:24.5%;background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url({% static 'search/images/single_background.jpg' %})">
         </div>
-
         <!-- Sidebar -->
         <div class="">
             <div class="row">
@@ -44,30 +42,53 @@
                             <li class="active">
                                 <a href="{% url 'SiteAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'HotelList' %}">View Hotels</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'AirlinesList' %}">View Airlines</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'HotelPaymentLog' %}">View Payment Log for Hotel Booking</a>
                             </li>
-                            <li class="">
+                            <li>
                                 <a href="{% url 'AirlinesPaymentLog' %}">View Payment Log for Flight Booking</a>
                             </li>
-                            <li class="">
-                                <a href="{% url 'ApproveHotelBooking' %}">Approve Hotel Booking</a>
+                            <li class="notification">
+                                <a href="{% url 'ApproveHotelBooking' %}">
+                                    Approve Hotel Booking
+                                    {% if hotelApproveCount > 0 %}
+                                        <span class="badge">{{ hotelApproveCount }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
-
-                            <li class="">
-                                <a href="{% url 'ApproveFlightBooking' %}">Approve Flight Booking</a>
+                            <li class="notification">
+                                <a href="{% url 'ApproveFlightBooking' %}">
+                                    Approve Flight Booking
+                                    {% if flightApproveCount > 0 %}
+                                        <span class="badge">{{ flightApproveCount }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li class="notification">
+                                <a href="{% url 'ApproveCancelHotelBooking' %}">
+                                    Approve Cancellation of Hotel Booking
+                                    {% if hotelCancelCount > 0 %}
+                                        <span class="badge">{{ hotelCancelCount }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li class="notification">
+                                <a href="{% url 'ApproveCancelFlightBooking' %}">
+                                    Approve Cancellation of Flight Booking
+                                    {% if flightCancelCount > 0 %}
+                                        <span class="badge">{{ flightCancelCount }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li class="">
                                 <a href="{% url 'Statistics' %}">View Stats</a>
                             </li>
-
-
                         </ul>
                     </nav>
                 </div>
