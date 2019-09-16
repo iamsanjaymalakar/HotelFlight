@@ -10,30 +10,30 @@
 {% block title %}Search Hotels{% endblock title %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
-<link href="{% static 'search/plugins/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet"
-      type="text/css">
-<link rel="stylesheet" type="text/css" href="{% static 'search/styles/search.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'search/styles/responsive.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'search/styles/single_listing_styles.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'gijgo/js/gijgo.min.css' %}">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
+    <link href="{% static 'search/plugins/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet"
+          type="text/css">
+    <link rel="stylesheet" type="text/css" href="{% static 'search/styles/search.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'search/styles/responsive.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'search/styles/single_listing_styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'gijgo/js/gijgo.min.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 {% endblock css %}
 
 {% block content %}
-<!-- Home -->
+    <!-- Home -->
 
-<div class="offers">
+    <div class="offers">
     <div class="hero-image"
          style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url({% static 'search/images/single_background.jpg' %})">
         <div class="hero-text">
-            <h1 style="margin-top:130px">{{hotel.Hotel_Name}}</h1>
+            <h1 style="margin-top:130px">{{ hotel.Hotel_Name }}</h1>
         </div>
     </div>
     <div class="">
         <div class="row">
-            <div class="col-lg-3" style="display: flex">
+            <div class="col-lg-3" style="display: flex;min-height: 650px;">
 
                 <div class="search" style="align-items: stretch">
                     <div class="search_inner">
@@ -67,11 +67,11 @@
                                             </div>
                                             <div class="search_item">
                                                 <div>check in</div>
-                                                {% render_field hotelform.checkin class="check_in search_input" placeholder=hotelform.checkin.label%}
+                                                {% render_field hotelform.checkin class="check_in search_input" placeholder=hotelform.checkin.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>check out</div>
-                                                {% render_field hotelform.checkout class="check_out search_input" placeholder=hotelform.checkout.label%}
+                                                {% render_field hotelform.checkout class="check_out search_input" placeholder=hotelform.checkout.label %}
                                             </div>
                                             <div class="search_item">
                                                 <div>room</div>
@@ -195,214 +195,213 @@
 
                             <!-- Single stop flights -->
                             {% for ssflight in ssflights %}
-                            <!-- Item -->
-                            <div class="offers_item" style="padding-bottom: 50px;padding-top: 50px;
+                                <!-- Item -->
+                                <div class="offers_item" style="padding-bottom: 50px;padding-top: 50px;
                             padding-left:20px;border-color: gray;border-style: solid;border-width: 1px;;">
 
-                                <div class="row">
-                                    <div class="col-lg-2">
-                                        <div class="offers_text">
-                                            <div style="color: black;">
-                                                {{ssflight.AirCompany_Name}}
+                                    <div class="row">
+                                        <div class="col-lg-2">
+                                            <div class="offers_text">
+                                                <div style="color: black;">
+                                                    {{ ssflight.AirCompany_Name }}
+                                                </div>
+                                                {{ ssflight.Airplane_Number }} | {{ ssflight.Aircraft }}
                                             </div>
-                                            {{ssflight.Airplane_Number}} | {{ssflight.Aircraft}}
                                         </div>
-                                    </div>
 
-                                    <div class="col-lg-6 no-padding no-margin no-gutters">
-                                        <div class="offers_content">
-                                            <table>
-                                                <tr>
-                                                    <td width="25%">
-                                                        <div class="offers_text">
-                                                            {{ssflight.Date}}<br/>
-                                                            {{ssflight.Time}}
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div style="padding-left: 20px" align="center">
-                                                            {{ssflight.Source}}, {{ssflight.Source_Airport}}
-                                                            <br/>
-                                                            to
-                                                            <br/>
-                                                            {{ssflight.Destination}}, {{ssflight.Destination_Airport}}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-1">
-                                        <div class="offers_text">
-                                            <div style="color: black;">
-                                                Duration:
+                                        <div class="col-lg-6 no-padding no-margin no-gutters">
+                                            <div class="offers_content">
+                                                <table>
+                                                    <tr>
+                                                        <td width="25%">
+                                                            <div class="offers_text">
+                                                                {{ ssflight.Date }}<br/>
+                                                                {{ ssflight.Time }}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div style="padding-left: 20px" align="center">
+                                                                {{ ssflight.Source }}, {{ ssflight.Source_Airport }}
+                                                                <br/>
+                                                                to
+                                                                <br/>
+                                                                {{ ssflight.Destination }}, {{ ssflight.Destination_Airport }}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
                                             </div>
-                                            {{ssflight.Duration}} min
                                         </div>
-                                    </div>
+                                        <div class="col-lg-1">
+                                            <div class="offers_text">
+                                                <div style="color: black;">
+                                                    Duration:
+                                                </div>
+                                                {{ ssflight.Duration }} min
+                                            </div>
+                                        </div>
 
-                                    <div class="col-lg-1">
-                                        <div class="offers_text">
-                                            <div style="color: black;">
-                                                Price:
-                                            </div>
-                                            <div class="offers_price">
-                                                {{ssflight.Price}}৳
+                                        <div class="col-lg-1">
+                                            <div class="offers_text">
+                                                <div style="color: black;">
+                                                    Price:
+                                                </div>
+                                                <div class="offers_price">
+                                                    {{ ssflight.Price }}৳
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-1" style="margin-left: 25px;">
-                                        <div class="button book_button" style="margin-top: 15px;">
-                                                <a href="check?FRID={{ssflight.FRID}}&FIDS={{ssflight.FIDS}}&FIDM1={{msflight.FIDM1}}&FIDM2={{msflight.FIDM2}}&ID2={{msflight.ID2}}&ID1={{msflight.ID1}}& {{ request.GET.urlencode }}">book</a>
-
-                                             </div>
+                                        <div class="col-lg-1" style="margin-left: 25px;">
+                                            <div class="button book_button" style="margin-top: 15px;margin-left: 20px;padding: 0px;">
+                                                <a href="check?FRID={{ ssflight.FRID }}&FIDS={{ ssflight.FIDS }}&FIDM1={{ msflight.FIDM1 }}&FIDM2={{ msflight.FIDM2 }}&ID2={{ msflight.ID2 }}&ID1={{ msflight.ID1 }}&{{ request.GET.urlencode }}">book</a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             {% endfor %}
 
 
                             <!-- Multi stop flights -->
                             {% for msflight in msflights %}
-                            <!-- Item -->
-                            <div class="offers_item" style="padding-bottom: 50px;padding-top: 50px;
+                                <!-- Item -->
+                                <div class="offers_item" style="padding-bottom: 50px;padding-top: 50px;
                             padding-left:20px;border-color: gray;border-style: solid;border-width: 1px;">
-                                <div class="row">
-                                    <div class="col-lg-2">
-                                        <table>
-                                            <br>
-                                            <tr>
-                                                <div class="offers_text">
-                                                    <div style="color: black;">
-                                                        {{msflight.SrcCompany}}
+                                    <div class="row">
+                                        <div class="col-lg-2">
+                                            <table>
+                                                <br>
+                                                <tr>
+                                                    <div class="offers_text">
+                                                        <div style="color: black;">
+                                                            {{ msflight.SrcCompany }}
+                                                        </div>
+                                                        {{ msflight.SrcAirNo }} | {{ msflight.SrcAircraft }}
                                                     </div>
-                                                    {{msflight.SrcAirNo}} | {{msflight.SrcAircraft}}
-                                                </div>
-                                            </tr>
-                                            <hr>
-                                            <tr>
-                                                <div class="offers_text">
-                                                    <div style="color: black;">
-                                                        {{msflight.DestCompany}}
+                                                </tr>
+                                                <hr>
+                                                <tr>
+                                                    <div class="offers_text">
+                                                        <div style="color: black;">
+                                                            {{ msflight.DestCompany }}
+                                                        </div>
+                                                        {{ msflight.DestAirNo }} | {{ msflight.DestAircraft }}
                                                     </div>
-                                                    {{msflight.DestAirNo}} | {{msflight.DestAircraft}}
-                                                </div>
-                                            </tr>
-                                        </table>
-                                    </div>
-
-                                    <div class="col-lg-6">
-                                        <table>
-                                            <tr>
-                                                <table>
-                                                    <tr>
-                                                        <td width="25%">
-                                                            <div class="offers_text">
-                                                                {{msflight.Date}}<br/>
-                                                                {{msflight.SrcTime}}
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div style="padding-left: 20px" align="center">
-                                                                {{msflight.Source}}, {{msflight.SrcAirport}}
-                                                                <br/>
-                                                                to
-                                                                <br/>
-                                                                {{msflight.Intermediate}}, {{msflight.InterAirport}}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </tr>
-                                            <hr>
-                                            <tr>
-                                                <table>
-                                                    <tr>
-                                                        <td width="25%">
-                                                            <div class="offers_text">
-                                                                {{msflight.Date}}<br/>
-                                                                {{msflight.DestTime}}
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div style="padding-left: 20px" align="center">
-                                                                {{msflight.Intermediate}}, {{msflight.InterAirport}}
-                                                                <br/>
-                                                                to
-                                                                <br/>
-                                                                {{msflight.Destination}},
-                                                                {{msflight.DestAirport}}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <div class="col-lg-1">
-                                        <table>
-                                            <br>
-                                            <tr>
-                                                <div class="offers_text">
-                                                    <div style="color: black;">
-                                                        Duration:
-                                                    </div>
-                                                    {{msflight.SrcDuration}} min
-                                                </div>
-                                            </tr>
-                                            <hr>
-                                            <tr>
-                                                <div class="offers_text">
-                                                    <div style="color: black;">
-                                                        Duration:
-                                                    </div>
-                                                    {{msflight.DestDuration}} min
-                                                </div>
-                                            </tr>
-                                        </table>
-                                    </div>
-
-                                    <div class="col-lg-1">
-                                        <table>
-                                            <br>
-                                            <tr>
-                                                <div class="offers_text">
-                                                    <div style="color: black;">
-                                                        Price:
-                                                    </div>
-                                                    <div class="offers_price" style="font-size: 30px;">
-                                                        {{msflight.firstPrice}}৳
-                                                    </div>
-                                                </div>
-                                            </tr>
-                                            <hr>
-                                            <tr>
-                                                <div class="offers_text">
-                                                    <div style="color: black;">
-                                                        Price:
-                                                    </div>
-                                                    <div class="offers_price" style="font-size: 30px;">
-                                                        {{msflight.secondPrice}}৳
-                                                    </div>
-                                                </div>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <div class="col-lg-1" style="margin-left: 25px;">
-                                        <div class="offers_text">
-                                            <div style="color: black;">
-                                                Total:
-                                            </div>
-                                            <div class="offers_price" style="font-size: 30px;">
-                                                {{msflight.firstPrice|add:msflight.secondPrice}}৳
-                                            </div>
+                                                </tr>
+                                            </table>
                                         </div>
-                                        <div class="button book_button">
-                                            <a href="check?FRID={{ssflight.FRID}}&FIDS={{ssflight.FIDS}}&FIDM1={{msflight.FIDM1}}&FIDM2={{msflight.FIDM2}}&ID2={{msflight.ID2}}&ID1={{msflight.ID1}}& {{ request.GET.urlencode }}">book</a>
+
+                                        <div class="col-lg-6">
+                                            <table>
+                                                <tr>
+                                                    <table>
+                                                        <tr>
+                                                            <td width="25%">
+                                                                <div class="offers_text">
+                                                                    {{ msflight.Date }}<br/>
+                                                                    {{ msflight.SrcTime }}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div style="padding-left: 20px" align="center">
+                                                                    {{ msflight.Src }}, {{ msflight.SrcAirport }}
+                                                                    <br/>
+                                                                    to
+                                                                    <br/>
+                                                                    {{ msflight.Intermediate }}, {{ msflight.InterAirport }}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </tr>
+                                                <hr>
+                                                <tr>
+                                                    <table>
+                                                        <tr>
+                                                            <td width="25%">
+                                                                <div class="offers_text">
+                                                                    {{ msflight.Date }}<br/>
+                                                                    {{ msflight.DestTime }}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div style="padding-left: 20px" align="center">
+                                                                    {{ msflight.Intermediate }}, {{ msflight.InterAirport }}
+                                                                    <br/>
+                                                                    to
+                                                                    <br/>
+                                                                    {{ msflight.Dest }},
+                                                                    {{ msflight.DestAirport }}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-lg-1">
+                                            <table>
+                                                <br>
+                                                <tr>
+                                                    <div class="offers_text">
+                                                        <div style="color: black;">
+                                                            Duration:
+                                                        </div>
+                                                        {{ msflight.SrcDuration }} min
+                                                    </div>
+                                                </tr>
+                                                <hr>
+                                                <tr>
+                                                    <div class="offers_text">
+                                                        <div style="color: black;">
+                                                            Duration:
+                                                        </div>
+                                                        {{ msflight.DestDuration }} min
+                                                    </div>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="col-lg-1">
+                                            <table>
+                                                <br>
+                                                <tr>
+                                                    <div class="offers_text">
+                                                        <div style="color: black;">
+                                                            Price:
+                                                        </div>
+                                                        <div class="offers_price" style="font-size: 30px;">
+                                                            {{ msflight.firstPrice }}৳
+                                                        </div>
+                                                    </div>
+                                                </tr>
+                                                <hr>
+                                                <tr>
+                                                    <div class="offers_text">
+                                                        <div style="color: black;">
+                                                            Price:
+                                                        </div>
+                                                        <div class="offers_price" style="font-size: 30px;">
+                                                            {{ msflight.secondPrice }}৳
+                                                        </div>
+                                                    </div>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-lg-1" style="margin-left: 25px;">
+                                            <div class="offers_text">
+                                                <div style="color: black;">
+                                                    Total:
+                                                </div>
+                                                <div class="offers_price" style="font-size: 30px;">
+                                                    {{ msflight.firstPrice|add:msflight.secondPrice }}৳
+                                                </div>
+                                            </div>
+                                            <div class="button book_button">
+                                                <a href="check?FRID={{ ssflight.FRID }}&FIDS={{ ssflight.FIDS }}&FIDM1={{ msflight.FIDM1 }}&FIDM2={{ msflight.FIDM2 }}&ID2={{ msflight.ID2 }}&ID1={{ msflight.ID1 }}&{{ request.GET.urlencode }}">book</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             {% endfor %}
                         </div>
 
@@ -416,10 +415,10 @@
     </div>
 
 
-    {% endblock content %}
+{% endblock content %}
 
 
-    {% block jscript %}
+{% block jscript %}
     <script>
         function getAllUrlParams(url) {
             // get query string from url (optional) or window
@@ -476,7 +475,7 @@
         }
 
         let jsTomorrow = new Date();
-        jsTomorrow.setDate(new Date().getDate()+1);
+        jsTomorrow.setDate(new Date().getDate() + 1);
         let today = new Date().getFullYear() + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" +
             ("0" + new Date().getDate()).slice(-2);
         let tomorrow = jsTomorrow.getFullYear() + "-" + ("0" + (jsTomorrow.getMonth() + 1)).slice(-2) + "-" +
@@ -504,4 +503,4 @@
         });
 
     </script>
-    {% endblock jscript %}
+{% endblock jscript %}

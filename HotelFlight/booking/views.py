@@ -58,6 +58,7 @@ def hotelbookingpaymet(request):
     dateCount = daysBetween(checkIn, checkOut)
     hotelRoomID = request.GET.get('hrid', '')
     adultCount = request.GET.get('adult', '')
+    hotelID = request.GET.get('hid', '')
     cursor = connection.cursor()
     cursor.execute("SELECT R.RoomType, R.SingleBedCount, R.DoubleBedCount,HR.Room_id as 'roomID',HR.Price*%s as "
                    "'NPrice',HR.Price*%s*%s as 'Price',R.AirConditioner,HR.Complimentary_Breakfast,HR.wifi FROM "
@@ -69,6 +70,9 @@ def hotelbookingpaymet(request):
                    "database_hotel_room HR JOIN database_hotel H ON HR.Hotel_id=H.id WHERE HR.id=%s",
                    [int(hotelRoomID)])
     hotel = namedtuplefetchall(cursor)
+    price = Hotel_Room.objects.get(id=int(hotelRoomID)).Price
+    percentage = Hotel.objects.get(id=int(hotelID)).Percentage / 100
+    paidMoney = percentage * price * int(roomCount) * dateCount
     form = HotelBookingForm()
     hotelForm = SearchHotelForm()
     flightForm = SearchFlightForm()
@@ -77,7 +81,7 @@ def hotelbookingpaymet(request):
     hotelForm.fields['adult'].initial = int(adultCount)
     return render(request, "booking/bookingpayment.html",
                   {'room': room[0], 'hotel': hotel[0], 'form': form, 'hotelForm': hotelForm, 'flightForm': flightForm,
-                   'daysCount': dateCount})
+                   'daysCount': dateCount, 'paidMoney': paidMoney})
 
 
 def BookingConfirmationPage(request):
@@ -353,9 +357,21 @@ def flightbookingpayment(request):
         form = FlightBookingForm()
         hotelform = SearchHotelForm()
         flightform = SearchFlightForm()
+        cursor.execute("SELECT Price FROM database_flight_route where id=%s", [frid])
+        results = cursor.fetchone()
+        print("price is ")
+        print(results[0])
+        Price = results[0]
+        cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
+                       "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
+                       "ON (FR.Flight_id = F.id) where FR.id=%s", [frid])
+        results = cursor.fetchone()
+        Percentage = results[0] / 100
+        PaidMoney = Percentage * Price * float(adultCount)
+
         return render(request, "booking/flightbookingpayment.html",
                       {'flight': flight[0], 'aircompany': aircompany[0], 'form': form, 'hotelform': hotelform,
-                       'flightform': flightform, 'multi': 'False'})
+                       'flightform': flightform, 'multi': 'False', 'paidMoney': PaidMoney})
     else:
         cursor = connection.cursor()
 
@@ -389,10 +405,36 @@ def flightbookingpayment(request):
         form = FlightBookingForm()
         hotelform = SearchHotelForm()
         flightform = SearchFlightForm()
+        cursor.execute("SELECT Price FROM database_flight_route where id=%s", [id1])
+        results = cursor.fetchone()
+        print("price is ")
+        print(results[0])
+        Price1 = results[0]
+        cursor.execute("SELECT Price FROM database_flight_route where id=%s", [id2])
+
+        results = cursor.fetchone()
+        print("price is ")
+        print(results[0])
+        Price2 = results[0]
+        cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
+                       "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
+                       "ON (FR.Flight_id = F.id) where FR.id=%s", [id1])
+        results = cursor.fetchone()
+        Percentage = results[0] / 100
+        PaidMoney1 = Percentage * Price1 * float(adultCount)
+
+        cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
+                       "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
+                       "ON (FR.Flight_id = F.id) where FR.id=%s", [id2])
+        results = cursor.fetchone()
+        Percentage = results[0] / 100
+        PaidMoney2 = Percentage * Price2 * float(adultCount)
+        Total = PaidMoney1 + PaidMoney2
         return render(request, "booking/flightbookingpayment.html",
                       {'flight': flight[0], 'aircompany': aircompany[0], 'flight2': flight2[0],
                        'aircompany2': aircompany2[0], 'form': form, 'hotelform': hotelform,
-                       'flightform': flightform, 'multi': 'True'})
+                       'flightform': flightform, 'multi': 'True', 'paidMoney': Total
+                       })
 
 
 def FlightBookingConfirmationPage(request):
@@ -466,7 +508,6 @@ def FlightBookingConfirmationPage(request):
         Percentage_refunding = results[0] / 100
 
         MoneyToRefund = PaidMoney * Percentage_refunding
-        MoneyToRefund = PaidMoney * .8
         cursor.execute(
             "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled,Status) "
             "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0,0)",
@@ -515,106 +556,105 @@ def FlightBookingConfirmationPage(request):
             id = 1
         else:
             id = results[0] + 1
-            Price = 0
-            cursor.execute("SELECT Price FROM database_flight_route where id=%s", [id1])
-            results = cursor.fetchone()
-            print("price is ")
-            print(results[0])
-            Price1 = results[0]
-            cursor.execute("SELECT Price FROM database_flight_route where id=%s", [id2])
+        Price = 0
+        cursor.execute("SELECT Price FROM database_flight_route where id=%s", [id1])
+        results = cursor.fetchone()
+        print("price is ")
+        print(results[0])
+        Price1 = results[0]
+        cursor.execute("SELECT Price FROM database_flight_route where id=%s", [id2])
+        results = cursor.fetchone()
+        print("price is ")
+        print(results[0])
+        Price2 = results[0]
+        cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
+                       "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
+                       "ON (FR.Flight_id = F.id) where FR.id=%s", [id1])
+        results = cursor.fetchone()
+        Percentage = results[0] / 100
+        PaidMoney = Percentage * Price1 * float(adultCount)
+        MoneyToPay = Price1 * float(adultCount) * (1 - Percentage)
+        cursor.execute(
+            "SELECT Percentage_refunding FROM database_cancellation_policy WHERE id =(SELECT Cancellation_Policy_id FROM database_flight_route where id=%s)",
+            [id1])
+        results = cursor.fetchone()
+        Percentage_refunding = results[0] / 100
 
-            results = cursor.fetchone()
-            print("price is ")
-            print(results[0])
-            Price2 = results[0]
-            cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
-                           "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
-                           "ON (FR.Flight_id = F.id) where FR.id=%s", [id1])
-            results = cursor.fetchone()
-            Percentage = results[0] / 100
-            PaidMoney = Percentage * Price1 * float(adultCount)
-            MoneyToPay = Price1 * float(adultCount) * (1 - Percentage)
-            cursor.execute(
-                "SELECT Percentage_refunding FROM database_cancellation_policy WHERE id =(SELECT Cancellation_Policy_id FROM database_flight_route where id=%s)",
-                [id1])
-            results = cursor.fetchone()
-            Percentage_refunding = results[0] / 100
+        MoneyToRefund = PaidMoney * Percentage_refunding
 
-            MoneyToRefund = PaidMoney * Percentage_refunding
+        cursor.execute(
+            "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation,  User_id, PaidMoney,isCancelled,Status) "
+            "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0,0)",
+            [id, MoneyToPay, MoneyToRefund, uid, PaidMoney])
 
-            cursor.execute(
-                "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation,  User_id, PaidMoney,isCancelled,Status) "
-                "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE,  %s,%s,0,0)",
-                [id, MoneyToPay, MoneyToRefund, uid, PaidMoney])
+        cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
+                       "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
+                       "ON (FR.Flight_id = F.id) where FR.id=%s", [id2])
+        results = cursor.fetchone()
+        Percentage = results[0] / 100
+        PaidMoney = Percentage * Price2 * float(adultCount)
+        MoneyToPay = Price2 * float(adultCount) * (1 - Percentage)
+        cursor.execute(
+            "SELECT Percentage_refunding FROM database_cancellation_policy WHERE id =(SELECT Cancellation_Policy_id FROM database_flight_route where id=%s)",
+            [id2])
+        results = cursor.fetchone()
+        Percentage_refunding = results[0] / 100
 
-            cursor.execute("SELECT A.Percentage from database_air_company A JOIN database_flight F "
-                           "ON (A.id = F.AirCompany_id) JOIN database_flight_route FR "
-                           "ON (FR.Flight_id = F.id) where FR.id=%s", [id2])
-            results = cursor.fetchone()
-            Percentage = results[0] / 100
-            PaidMoney = Percentage * Price2 * float(adultCount)
-            MoneyToPay = Price2 * float(adultCount) * (1 - Percentage)
-            cursor.execute(
-                "SELECT Percentage_refunding FROM database_cancellation_policy WHERE id =(SELECT Cancellation_Policy_id FROM database_flight_route where id=%s)",
-                [id2])
-            results = cursor.fetchone()
-            Percentage_refunding = results[0] / 100
+        MoneyToRefund = PaidMoney * Percentage_refunding
+        cursor.execute(
+            "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled,Status) "
+            "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE, %s, %s,0,0)",
+            [id + 1, MoneyToPay, MoneyToRefund, uid, PaidMoney])
 
-            MoneyToRefund = PaidMoney * Percentage_refunding
-            cursor.execute(
-                "INSERT INTO database_booking (id, MoneyToPay, MoneyToRefund, DateOfBooking, DateOfCancellation, User_id,PaidMoney,isCancelled,Status) "
-                "VALUES (%s, %s, %s, CURRENT_DATE, CURRENT_DATE, %s, %s,0,0)",
-                [id + 1, MoneyToPay, MoneyToRefund, uid, PaidMoney])
-
-            cursor.execute("SELECT MAX(id) from database_flight_booking")
-            results = cursor.fetchone()
-            print(results)
+        cursor.execute("SELECT MAX(id) from database_flight_booking")
+        results = cursor.fetchone()
+        print(results)
+        new_id = 1
+        if results[0] is None:
             new_id = 1
-            if results[0] is None:
-                new_id = 1
-            else:
-                new_id = results[0] + 1
-            cursor.execute(
-                "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
-                "VALUES (%s,%s,%s,%s,0,0)", [new_id, id, id1, adultCount])
-            new_id = new_id + 1
-            cursor.execute(
-                "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
-                "VALUES (%s,%s,%s,%s,0,0)", [new_id, id + 1, id2, adultCount])
-            cursor.execute("UPDATE database_flight_route "
-                           "SET TotalSeatsBooked = TotalSeatsBooked + %s "
-                           "WHERE id=%s", [adultCount, id1])
-            cursor.execute("UPDATE database_flight_route "
-                           "SET TotalSeatsBooked = TotalSeatsBooked + %s "
-                           "WHERE id=%s", [adultCount, id2])
-            cursor.execute("SELECT A.Aircompany_Name as 'Airlines' ,A.CompanyAdmin_id as 'uid' "
-                           "FROM database_flight_route FR JOIN database_flight F ON (FR.Flight_id = F.id )  "
-                           "JOIN database_air_company A ON (A.id = F.AirCompany_id) "
-                           "WHERE FR.id = %s", [id1])
-            aircompany = namedtuplefetchall(cursor)
+        else:
+            new_id = results[0] + 1
+        cursor.execute(
+            "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
+            "VALUES (%s,%s,%s,%s,0,0)", [new_id, id, id1, adultCount])
+        new_id = new_id + 1
+        cursor.execute(
+            "INSERT INTO database_flight_booking (id, Booking_id, Flight_id,TotalSeats,isApproved,isCancellationApproved) "
+            "VALUES (%s,%s,%s,%s,0,0)", [new_id, id + 1, id2, adultCount])
+        cursor.execute("UPDATE database_flight_route "
+                       "SET TotalSeatsBooked = TotalSeatsBooked + %s "
+                       "WHERE id=%s", [adultCount, id1])
+        cursor.execute("UPDATE database_flight_route "
+                       "SET TotalSeatsBooked = TotalSeatsBooked + %s "
+                       "WHERE id=%s", [adultCount, id2])
+        cursor.execute("SELECT A.Aircompany_Name as 'Airlines' ,A.CompanyAdmin_id as 'uid' "
+                       "FROM database_flight_route FR JOIN database_flight F ON (FR.Flight_id = F.id )  "
+                       "JOIN database_air_company A ON (A.id = F.AirCompany_id) "
+                       "WHERE FR.id = %s", [id1])
+        aircompany = namedtuplefetchall(cursor)
 
-            cursor.execute(
-                "SELECT F.Airplane_Number as 'Plane' , FR.Source_Airport as 'Src_Airport', R.Source as 'Src' ,FR.Destination_Airport as 'Dest_Airport',R.Destination as 'Dest', "
-                "FR.Time as 'Time', FR.Date as 'Date', FR.Price*%s as 'Price' , FR.Duration as 'Duration' "
-                "FROM database_flight_route FR JOIN database_route R ON (FR.Route_id = R.id) JOIN database_flight F ON (FR.Flight_id = F.id) where FR.id = %s",
-                [adultCount, id1])
+        cursor.execute(
+            "SELECT F.Airplane_Number as 'Plane' , FR.Source_Airport as 'Src_Airport', R.Source as 'Src' ,FR.Destination_Airport as 'Dest_Airport',R.Destination as 'Dest', "
+            "FR.Time as 'Time', FR.Date as 'Date', FR.Price*%s as 'Price' , FR.Duration as 'Duration' "
+            "FROM database_flight_route FR JOIN database_route R ON (FR.Route_id = R.id) JOIN database_flight F ON (FR.Flight_id = F.id) where FR.id = %s",
+            [adultCount, id1])
 
-            flight = namedtuplefetchall(cursor)
+        flight = namedtuplefetchall(cursor)
 
-            cursor.execute("SELECT A.Aircompany_Name as 'Airlines' ,A.CompanyAdmin_id as 'uid' "
-                           "FROM database_flight_route FR JOIN database_flight F ON (FR.Flight_id = F.id )  "
-                           "JOIN database_air_company A ON (A.id = F.AirCompany_id) "
-                           "WHERE FR.id = %s", [id2])
-            aircompany2 = namedtuplefetchall(cursor)
+        cursor.execute("SELECT A.Aircompany_Name as 'Airlines' ,A.CompanyAdmin_id as 'uid' "
+                       "FROM database_flight_route FR JOIN database_flight F ON (FR.Flight_id = F.id )  "
+                       "JOIN database_air_company A ON (A.id = F.AirCompany_id) "
+                       "WHERE FR.id = %s", [id2])
+        aircompany2 = namedtuplefetchall(cursor)
 
-            cursor.execute(
-                "SELECT F.Airplane_Number as 'Plane' , FR.Source_Airport as 'Src_Airport', R.Source as 'Src' ,FR.Destination_Airport as 'Dest_Airport',R.Destination as 'Dest', "
-                "FR.Time as 'Time', FR.Date as 'Date', FR.Price*%s as 'Price' , FR.Duration as 'Duration' "
-                "FROM database_flight_route FR JOIN database_route R ON (FR.Route_id = R.id) JOIN database_flight F ON (FR.Flight_id = F.id) where FR.id = %s",
-                [adultCount, id2])
+        cursor.execute(
+            "SELECT F.Airplane_Number as 'Plane' , FR.Source_Airport as 'Src_Airport', R.Source as 'Src' ,FR.Destination_Airport as 'Dest_Airport',R.Destination as 'Dest', "
+            "FR.Time as 'Time', FR.Date as 'Date', FR.Price*%s as 'Price' , FR.Duration as 'Duration' "
+            "FROM database_flight_route FR JOIN database_route R ON (FR.Route_id = R.id) JOIN database_flight F ON (FR.Flight_id = F.id) where FR.id = %s",
+            [adultCount, id2])
 
-            flight2 = namedtuplefetchall(cursor)
-            return render(request, "booking/flightbookingconfirmation.html",
-                          {'flight': flight[0], 'aircompany': aircompany[0], 'flight2': flight2[0],
-                           'aircompany2': aircompany2[0], 'form': form, 'hotelform': hotelform,
-                           'flightform': flightform, 'multi': 'True'})
+        flight2 = namedtuplefetchall(cursor)
+        return render(request, "booking/flightbookingconfirmation.html",
+                      {'flight': flight[0], 'aircompany': aircompany[0], 'flight2': flight2[0],
+                       'aircompany2': aircompany2[0], 'form': form, 'hotelform': hotelform,
+                       'flightform': flightform, 'multi': 'True'})

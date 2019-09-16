@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Bookings | {{ request.user }}{% endblock title %}
+{% block title %}Today's Bookings | {{ request.user }}{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -20,30 +20,43 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
-        #roomstable {
+        #bookingsTable {
             font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
             border-collapse: collapse;
             width: 100%;
         }
 
-        #roomstable td, #roomstable th {
+        #bookingsTable td, #bookingsTable th {
             border: 1px solid #ddd;
             padding: 8px;
         }
 
-        #roomstable tr:nth-child(even) {
+        #bookingsTable tr:nth-child(even) {
             background: linear-gradient(to top right, #fcd49c, #bd99ff);
         }
 
-        #roomstable tr:hover {
+        #bookingsTable tr:hover {
             background: #50a6fb;
         }
 
-        #roomstable th {
+        #bookingsTable th {
             padding-top: 12px;
             padding-bottom: 12px;
             background-color: #350a4e;
             color: white;
+            cursor: pointer;
+        }
+
+        #bookingInput {
+            background-image: url({% static 'siteadmin/search.png' %});
+            background-position: 5px 5px;
+            background-repeat: no-repeat;
+            width: 70%;
+            font-size: 16px;
+            padding: 12px 20px 12px 50px;
+            border: 1px solid #ddd;
+            margin-bottom: 12px;
+            margin-left: 15px;
         }
     </style>
 
@@ -52,11 +65,9 @@
 {% block content %}
 
     <div class="offers">
-
         <div class="hero-image"
              style="height:24.5%;background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url({% static 'search/images/single_background.jpg' %})">
         </div>
-
         <!-- Sidebar -->
         <div class="">
             <div class="row">
@@ -65,14 +76,18 @@
                         <div class="sidebar-header">
                             <h3>Options</h3>
                         </div>
-
                         <ul class="list-unstyled components">
-                            <p>Bookings</p>
+                            <p>Today's Bookings</p>
                             <li>
                                 <a href="{% url 'hotelAdminDash' %}">Dashboard</a>
                             </li>
-                            <li>
-                                <a href="{% url 'hotelAdminNotifications' %}">Notifications</a>
+                            <li class="notification">
+                                <a href="{% url 'hotelAdminNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li>
                                 <a href="{% url 'hotelAdminUpdate' %}">Update Hotel</a>
@@ -96,43 +111,53 @@
                     </nav>
                 </div>
                 <div class="col-lg-10" style="padding-right: 35px;">
-
-                    <form action="{% url 'hotelAdminBookingsToday' %}">
-                        <input id="datep" name="date" width="250">
-                        <button>Submit</button>
-                    </form>
-
-
+                    <div class="row" style="margin-left: 5px;margin-top: 15px;">
+                        <form action="{% url 'hotelAdminBookingsToday' %}">
+                            <input id="datep" name="date" width="250">
+                            <button style="background: #31124b;font-size: 13px;font-weight: 700;color: #fff;
+                            text-transform: uppercase;border: 0;padding: 7px;margin-top: 5px;">
+                                Submit
+                            </button>
+                        </form>
+                        <a href="{% url 'hotelAdminBookingsToday' %}">
+                            <button style="background: #31124b;font-size: 13px;font-weight: 700;color: #fff;
+                            text-transform: uppercase;border: 0;padding: 7px;margin-left: 10px;">
+                                Clear
+                            </button>
+                        </a>
+                        <input type="text" id="bookingInput" onkeyup="searchTable()"
+                               placeholder="Search for name,type,room etc.."
+                               title="Type in a name,type,room etc.....">
+                    </div>
                     <div class="rooms" style="margin-top: 20px;">
-
                         <!-- Room -->
-                        <table id="roomstable" width="100%">
+                        <table id="bookingsTable" width="100%">
                             <tr align="center">
-                                <th width="15%">
+                                <th width="15%" onclick="sortTable(0,false)">
                                     Booked by
                                 </th>
-                                <th width="15%">
+                                <th width="15%" onclick="sortTable(1,false)">
                                     Room Details
                                 </th>
-                                <th width="15%">
+                                <th width="15%" onclick="sortTable(2,false)">
                                     Check-in
                                 </th>
-                                <th width="15%">
+                                <th width="15%" onclick="sortTable(3,false)">
                                     Check-out
                                 </th>
-                                <th>
+                                <th onclick="sortTable(4,true)">
                                     No of Rooms
                                 </th>
-                                <th>
+                                <th onclick="sortTable(5,true)">
                                     Price
                                 </th>
-                                <th width="13%">
+                                <th width="13%" onclick="sortTable(6,false)">
                                     Advanced Payment
                                 </th>
-                                <th width="13%">
+                                <th width="13%" onclick="sortTable(7,false)">
                                     Pending Payment
                                 </th>
-                                <th>
+                                <th onclick="sortTable(8,false)">
                                     Status
                                 </th>
                                 <th>
@@ -183,15 +208,17 @@
                                         {% endwith %}
                                     </td>
                                     <td>
-                                        <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                                            <option value="">Select...</option>
-                                            <option value="{% url 'hotelAdminBookingConfirm' %}?bid={{ datum.Bid }}">
-                                                Confirm
-                                            </option>
-                                            <option value="{% url 'hotelAdminBookingCancel' %}?bid={{ datum.Bid }}">
-                                                Cancel
-                                            </option>
-                                        </select>
+                                        {% if datum.Status == 0 %}
+                                            <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+                                                <option value="">Select...</option>
+                                                <option value="{% url 'hotelAdminBookingConfirm' %}?bid={{ datum.Bid }}">
+                                                    Confirm
+                                                </option>
+                                                <option value="{% url 'hotelAdminBookingCancel' %}?bid={{ datum.Bid }}">
+                                                    Cancel
+                                                </option>
+                                            </select>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -215,5 +242,98 @@
             format: 'yyyy-mm-dd',
             size: 'small'
         });
+
+        function sortTable(col, isNumber) {
+            let table = document.getElementById("bookingsTable");
+            let switching = true, shouldSwitch;
+            let asc = true, switchCount = 0, rows, i;
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    let x = rows[i].getElementsByTagName("TD")[col];
+                    let y = rows[i + 1].getElementsByTagName("TD")[col];
+                    if (asc) {
+                        if (isNumber) {
+                            console.log(Number(x.innerHTML));
+                            console.log(Number(y.innerHTML));
+                            if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                                console.log(x.innerHTML);
+                                console.log(y.innerHTML);
+                                console.log(true);
+                                console.log('\n\n');
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (isNumber) {
+                            if (Number(x.innerHTML) < Number(y.innerHTML)) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchCount++;
+                } else {
+                    if (switchCount === 0 && asc) {
+                        asc = false;
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        function searchTable() {
+            let colsToSearch = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+            let input = document.getElementById('bookingInput');
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById('bookingsTable');
+            let row = table.getElementsByTagName('tr');
+            for (let i = 0; i < row.length; i++) {
+                let data = [];
+                for (let j = 0; j < colsToSearch.length; j++) {
+                    data.push(row[i].getElementsByTagName("td")[colsToSearch[j]]);
+                }
+                let isData = true;
+                for (let j = 0; j < data.length; j++) {
+                    if (data[j] == null) {
+                        isData = false;
+                    }
+                }
+                if (isData) {
+                    let val = [];
+                    for (let j = 0; j < data.length; j++) {
+                        val.push(data[j].textContent || data[j].innerText);
+                    }
+                    let displayFlag = false;
+                    for (let j = 0; j < val.length; j++) {
+                        if (val[j].toUpperCase().indexOf(filter) > -1) {
+                            displayFlag = true;
+                        }
+                    }
+                    if (displayFlag) {
+                        row[i].style.display = "";
+                    } else {
+                        row[i].style.display = "none";
+                    }
+                }
+            }
+        }
     </script>
 {% endblock %}

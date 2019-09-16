@@ -156,6 +156,9 @@ def searchFlightPage(request):
                    "(strftime('%%H', S.Time)*60 + strftime('%%M', S.Time))",
                    [source, source, depart, dest, dest, source, source, dest, dest])
     msflights = namedtuplefetchall(cursor)
+    for mmm in msflights:
+        print(mmm.Src)
+        print(mmm.SrcAirport)
     flightform.fields['children'].initial = int(childrenCount)
     flightform.fields['adult'].initial = int(adultcount)
 

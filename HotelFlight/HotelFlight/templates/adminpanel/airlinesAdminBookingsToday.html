@@ -79,7 +79,7 @@
                                 </a>
                             </li>
 
-                             <li>
+                            <li>
                                 <a href="{% url 'airlinesAdminAddRoute' %}">Add Route</a>
                             </li>
                             <li>
@@ -105,16 +105,15 @@
                         </ul>
                     </nav>
                 </div>
+                <div></div>
                 <div class="col-lg-10" style="padding-right: 35px;">
-
-                    <form action="{% url 'hotelAdminBookingsToday' %}">
-                        <input id="datep" name="date" width="250">
-                        <button>Submit</button>
-                    </form>
 
 
                     <div class="rooms" style="margin-top: 20px;">
-
+                        <form action="{% url 'airlinesAdminBookingsToday' %}">
+                            <input id="datep" name="date" width="250">
+                            <button>Submit</button>
+                        </form>
                         <!-- Room -->
                         <table id="roomstable" width="100%">
                             <tr align="center">
@@ -155,14 +154,14 @@
                                         {{ datum.email }}
                                     </td>
                                     <td>
-                                          Airplane number: {{ datum.Plane }} <br>
-                                       Airplane model: {{ datum.Model }} <br>
+                                        Airplane number: {{ datum.Plane }} <br>
+                                        Airplane model: {{ datum.Model }} <br>
                                         Date : {{ datum.DOF }}<br>
                                         Time : {{ datum.Time }}<br>
                                         Duration(in minutes) : {{ datum.Duration }}
                                     </td>
                                     <td>
-                                          {{ datum.SRC }}<br>
+                                        {{ datum.SRC }}<br>
                                         to<br>
                                         {{ datum.DEST }}
                                     <td>
@@ -189,20 +188,39 @@
                                         {% endwith %}
                                     </td>
                                     <td>
-                                        <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                                            <option value="">Select...</option>
-                                            <option value="{% url 'airlinesAdminBookingConfirm' %}?bid={{ datum.BID }}">
-                                                Confirm
-                                            </option>
-                                            <option value="{% url 'airlinesAdminBookingCancel' %}?bid={{ datum.BID }}">
-                                                Cancel
-                                            </option>
-                                        </select>
+                                        {% with datum.Status as status %}
+                                            {% if status == 0 %}
+                                                <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+                                                    <option value="">Select...</option>
+                                                    <option value="{% url 'airlinesAdminBookingConfirm' %}?bid={{ datum.BID }}">
+                                                        Confirm
+                                                    </option>
+                                                    <option value="{% url 'airlinesAdminBookingCancel' %}?bid={{ datum.BID }}">
+                                                        Cancel
+                                                    </option>
+                                                </select>
+                                            {% elif status == 1 %}
+                                                <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+                                                    <option value="">Select...</option>
+                                                    <option value="{% url 'airlinesAdminBookingConfirm' %}?bid={{ datum.BID }}">
+                                                        Confirm
+                                                    </option>
+                                                    <option value="{% url 'airlinesAdminBookingCancel' %}?bid={{ datum.BID }}">
+                                                        Cancel
+                                                    </option>
+                                                </select>
+                                            {% else %}
+                                                Cancelled
+                                            {% endif %}
+                                        {% endwith %}
+
+
                                     </td>
                                 </tr>
                             {% endfor %}
                         </table>
                     </div>
+
                 </div>
             </div>
         </div>

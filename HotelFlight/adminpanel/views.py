@@ -41,7 +41,22 @@ def hoteladmindash(request):
     data = namedtuplefetchall(cursor)
     for datum in data:
         count = count + 1
-    return render(request, "adminpanel/hotelAdminDash.html", {'count': count, 'data': data})
+    cursor.execute("SELECT HB.Checkin_Date, sum(HR.Price) as Price, count(*) as cnt FROM database_hotel_booking HB JOIN"
+                   " database_hotel_room HR ON HB.Hotel_Room_id=HR.id JOIN database_hotel H ON HR.Hotel_id=H.id "
+                   "JOIN auth_user U ON H.CompanyAdmin_id=U.id WHERE U.id=%s group by Checkin_Date order by "
+                   "HB.Checkin_Date", [request.user.id])
+    dataPrice = namedtuplefetchall(cursor)
+    total = 0
+    for datum in dataPrice:
+        total += int(datum.Price)
+    cursor.execute("SELECT sum( B.MoneyToPay + B.PaidMoney) as 'Total', H.id as 'HotelId', R.RoomType as 'RoomType' "
+                   "FROM auth_user A JOIN database_hotel H ON A.id=H.CompanyAdmin_id JOIN database_hotel_room HR ON "
+                   "H.id=HR.Hotel_id JOIN database_room R ON HR.Room_id = R.id JOIN database_hotel_booking HB ON "
+                   "HR.id=HB.Hotel_Room_id JOIN database_booking B ON HB.Booking_id=B.id WHERE A.id=%s "
+                   "GROUP BY HB.Hotel_Room_id", [request.user.id])
+    dataRooms = namedtuplefetchall(cursor)
+    return render(request, "adminpanel/hotelAdminDash.html",
+                  {'count': count, 'data': data, 'dataPrice': dataPrice, 'total': total, 'dataRooms': dataRooms})
 
 
 def hoteladminnotifications(request):
@@ -74,7 +89,9 @@ def hoteladminbookings(request):
         "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s "
         "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
     data = namedtuplefetchall(cursor)
-    return render(request, "adminpanel/hotelAdminBookings.html", {'data': data})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/hotelAdminBookings.html", {'data': data, 'count': count})
 
 
 def hoteladminbookingstoday(request):
@@ -100,7 +117,9 @@ def hoteladminbookingstoday(request):
             "on (R.id=HR.Room_id) where HB.Checkin_Date=%s and HR.Hotel_id=%s "
             "order by HB.Checkin_Date desc,HB.Checkout_Date,B.MoneyToPay", [date, hotel.id])
     data = namedtuplefetchall(cursor)
-    return render(request, "adminpanel/hotelAdminBookingsToday.html", {'data': data})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/hotelAdminBookingsToday.html", {'data': data, 'count': count})
 
 
 def hoteladminbookingconfirm(request):
@@ -168,11 +187,13 @@ def hoteladminaddroom(request):
                     '/adminHotelRoomSingle?roomID=' + addroomform.cleaned_data['room'] + '&msg=S')
         else:
             messages.error(request, 'Invalid input', extra_tags='alert-danger')
-
     else:
         imageform = photoupload()
         addroomform = HotelAddRoomForm()
-    return render(request, "adminpanel/hotelAdminAddRoom.html", {'imageform': imageform, 'addroomform': addroomform})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/hotelAdminAddRoom.html",
+                  {'imageform': imageform, 'addroomform': addroomform, 'count': count})
 
 
 def hoteladminroomsingle(request):
@@ -218,14 +239,18 @@ def hoteladminroomsingle(request):
         updateroomform.fields['wifi'].initial = room.Wifi
         updateroomform.fields['breakfast'].initial = room.Complimentary_Breakfast
     imagelist = os.listdir(root)
+    # notifications count
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
     return render(request, "adminpanel/hotelAdminRoomSingle.html",
                   {'imagelist': imagelist, 'count': len(imagelist), 'imageform': imageform, 'room': room,
-                   'updateRoomForm': updateroomform, 'roomtype': roomtype})
+                   'updateRoomForm': updateroomform, 'roomtype': roomtype, 'countN': countN})
 
 
 def hoteladminrooms(request):
     rooms = Hotel_Room.objects.all().filter(Hotel=Hotel.objects.get(CompanyAdmin=request.user.id))
-    return render(request, "adminpanel/hotelAdminRooms.html", {'rooms': rooms})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/hotelAdminRooms.html", {'rooms': rooms, 'count': count})
 
 
 @login_required(login_url='login')
@@ -246,7 +271,9 @@ def hoteladminupdate(request):
             messages.error(request, 'Invalid input', extra_tags='alert-danger')
     else:
         updateForm = hotelupdateform()
-    return render(request, "adminpanel/hotelAdminUpdate.html", {'form': updateForm, 'hotel': hotel})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/hotelAdminUpdate.html", {'form': updateForm, 'hotel': hotel, 'count': count})
 
 
 def hoteladmincalender(request):
@@ -261,9 +288,9 @@ def hoteladmincalender(request):
         "on (R.id=HR.Room_id) where HB.Checkin_Date>=CURRENT_DATE and HR.Hotel_id=%s and B.Status<>2 "
         "order by HB.Checkin_Date,HB.Checkout_Date,B.MoneyToPay", [hotel.id])
     data = namedtuplefetchall(cursor)
-    for datum in data:
-        print(datum.first_name)
-    return render(request, "adminpanel/hotelAdminCalender.html", {'data': data})
+    # notifications count
+    count = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/hotelAdminCalender.html", {'data': data, 'count': count})
 
 
 def airlinesadmindash(request):

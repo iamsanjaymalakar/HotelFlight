@@ -44,8 +44,13 @@
                             <li>
                                 <a href="{% url 'hotelAdminDash' %}">Dashboard</a>
                             </li>
-                            <li>
-                                <a href="{% url 'hotelAdminNotifications' %}">Notifications</a>
+                            <li class="notification">
+                                <a href="{% url 'hotelAdminNotifications' %}">
+                                    Notifications
+                                    {% if countN > 0 %}
+                                        <span class="badge">{{ countN }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li class="">
                                 <a href="{% url 'hotelAdminUpdate' %}">Update Hotel</a>
@@ -106,10 +111,6 @@
                         <div class="caption-container">
                             <p id="caption"></p>
                         </div>
-
-                        <!-- Remove image -->
-
-
                         <!-- Thumbnail images -->
                         <div class="row" style="display: table;margin-left:0px;margin-right: 0px;">
                             {% for image in imagelist %}
@@ -134,8 +135,8 @@
                         {% endfor %}
                     </div>
                     <div class="row">
-                        <div class="col-lg-6" style="padding: 10px;padding-left: 23px; ">
-                            <div class="contact_form_container">
+                        <div class="col-lg-6" style="padding: 10px;padding-left: 23px;">
+                            <div class="contact_form_container" style="min-height: 127.3vh;">
                                 <div class="contact_title text-center">
                                     Update Room information
                                 </div>
@@ -206,14 +207,12 @@
                                         </div>
                                         {% render_field imageform.roomid class="destination search_input" value=request.GET.roomID type="hidden" %}
                                         {% render_field imageform.userid class="destination search_input" value=request.user.id type="hidden" %}
-
                                         <button type="submit" class="form_submit_button button trans_200">Upload
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -224,7 +223,7 @@
 
 {% block jscript %}
     <script>
-        var slideIndex = 1;
+        let slideIndex = 1;
         showSlides(slideIndex);
 
         // Next/previous controls
@@ -238,10 +237,10 @@
         }
 
         function showSlides(n) {
-            var i;
-            var slides = document.getElementsByClassName("mySlides");
-            var dots = document.getElementsByClassName("demo");
-            var captionText = document.getElementById("caption");
+            let i;
+            let slides = document.getElementsByClassName("mySlides");
+            let dots = document.getElementsByClassName("demo");
+            let captionText = document.getElementById("caption");
             if (n > slides.length) {
                 slideIndex = 1
             }

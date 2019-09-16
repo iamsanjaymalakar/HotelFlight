@@ -128,38 +128,47 @@
                         <table id="roomstable" width="100%">
                             <tr align="center">
                                 <th width="13%">
+                                    Booked by
+                                </th>
+                                <th width="8%">
                                     Airlines
                                 </th>
                                 <th width="23%">
                                     Flight details
                                 </th>
-                                <th width="23%">
+                                <th width="10%">
                                     Route details
                                 </th>
                                 <th width="3%">
                                     Price
                                 </th>
-                                <th width="15%">
+                                <th width="3%">
                                     Pending Payment
                                 </th>
-                                <th width="15%">
+                                <th width="3%">
                                     Advanced Payment
                                 </th>
-                                <th width="15%">
+                                <th width="3%">
                                     Money to be refunded upon cancellation
                                 </th>
-                                <th width="15%">
+                                <th width="13%">
                                     Date of Booking
                                 </th>
                                 <th width="3%">
                                     Total Seats Booked
                                 </th>
-                                <th>
+                                <th width="8%">
                                     Transaction Type
                                 </th>
                             </tr>
                             {% for datum in data %}
                                 <tr align="center">
+                                    <td>
+                                        {{ datum.name }} <br>
+                                        {{ datum.phn }} <br>
+                                        {{ datum.mail }} <br>
+                                        {{ datum.addr }} <br>
+                                    </td>
                                     <td>
                                         {{ datum.AirCompany_Name }}
                                     </td>
@@ -186,7 +195,6 @@
                                     </td>
                                     <td>
                                         {{ datum.RefundedMoneyUponCancellation }}
-
                                     </td>
                                     <td>
                                         {{ datum.DOB }}
@@ -195,8 +203,12 @@
                                         {{ datum.TotalSeats }}
                                     </td>
                                     <td>
-                                        {% if datum.Flag == 1 %} Credit
-                                        {% elif datum.Flag == 0 %} Debit
+                                        {% if datum.Flag == 1 %}
+                                            Credit: {{ datum.name }} pays {{ datum.Paid }} to
+                                            {{ datum.AirCompany_Name }}
+                                        {% elif datum.Flag == 0 %}
+                                            Debit: {{ datum.AirCompany_Name }} pays
+                                            {{ datum.RefundedMoneyUponCancellation }} to {{ datum.name }}
                                         {% endif %}
                                     </td>
 

@@ -82,6 +82,17 @@ def viewAirlines(request):
 def viewPaymentLog(request):
     cursor = connection.cursor()
     cursor.execute(
+        "SELECT AU.first_name || ' '|| AU.last_name as 'name' , PR.Phone as 'phn', PR.Address as 'addr', "
+        "AU.email as 'mail',PL.Flag,H.Hotel_Name as Hotel_Name,R.RoomType as RoomType,HR.Price as UnitPrice,"
+        "B.MoneyToPay as MoneyToPay,B.MoneyToRefund as MoneyToRefund,B.PaidMoney as PaidMoney,B.DateOfBooking "
+        "as DOB,HB.Checkin_Date as CheckinDate,HB.Checkout_Date as CheckoutDate,HB.TotalRooms as TotalRooms FROM "
+        "database_payment_log PL JOIN database_booking B ON (PL.booking_id = B.id) JOIN database_hotel_booking HB "
+        "ON(HB.Booking_id = B.id) JOIN database_hotel_room HR ON (HB.Hotel_Room_id = HR.id) "
+        "JOIN database_hotel H ON (H.id = HR.Hotel_id) JOIN database_room R ON (R.id = HR.Room_id) "
+        "JOIN auth_user AU on (B.User_id=AU.id) JOIN database_profile PR ON (PR.user_id = AU.id) "
+        " WHERE PL.Admin_id=%s", [request.user.id])
+    '''
+    cursor.execute(
         "SELECT PL.Flag,H.Hotel_Name as Hotel_Name,R.RoomType as RoomType,HR.Price as UnitPrice,"
         "B.MoneyToPay as MoneyToPay,B.MoneyToRefund as MoneyToRefund,B.PaidMoney as PaidMoney,"
         "B.DateOfBooking as DOB,HB.Checkin_Date as CheckinDate,HB.Checkout_Date as CheckoutDate,"
@@ -89,6 +100,7 @@ def viewPaymentLog(request):
         "JOIN database_hotel_booking HB ON(HB.Booking_id = B.id) JOIN database_hotel_room HR ON "
         "(HB.Hotel_Room_id = HR.id) JOIN database_hotel H ON (H.id = HR.Hotel_id) JOIN database_room R ON "
         "(R.id = HR.Room_id) WHERE PL.Admin_id=%s", [request.user.id])
+    '''
     data = namedtuplefetchall(cursor)
     # notification count
     cursor.execute("select count(*) as cnt from database_hotel_booking HB join database_booking B on "
@@ -111,6 +123,19 @@ def viewPaymentLog(request):
 def viewAirlinesPaymentLog(request):
     cursor = connection.cursor()
     cursor.execute(
+        "SELECT  AU.first_name || ' '|| AU.last_name as 'name' , PR.Phone as 'phn', PR.Address as 'addr', "
+        "AU.email as 'mail', PL.Flag,B.User_id,FR.Price*FB.TotalSeats as 'Price', FB.TotalSeats as 'TotalSeats', "
+        "A.AirCompany_Name as 'AirCompany_Name', F.Airplane_Number as 'Plane', F.Aircraft as 'Model', FR.Time "
+        "as 'Time', FR.Date as 'DOF', B.DateOfBooking as 'DOB', (B.PaidMoney) as 'Paid',B.MoneyToPay as 'Pending',"
+        "B.MoneyToRefund as 'RefundedMoneyUponCancellation', FR.Source_Airport||','||R.Source as 'SRC' , "
+        "FR.Destination_Airport||','||R.Destination as 'DEST', FR.Duration as 'Duration' FROM database_booking B "
+        "JOIN database_payment_log PL ON (PL.Booking_id=B.id) JOIN database_flight_booking FB ON (FB.Booking_id=B.id) "
+        "JOIN database_flight_route FR ON (FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) "
+        "JOIN database_air_company A ON (F.AirCompany_id = A.id) JOIN database_route R ON (R.id=FR.Route_id) "
+        "JOIN auth_user AU on (B.User_id=AU.id) JOIN database_profile PR ON (PR.user_id = AU.id) "
+        "WHERE PL.Admin_id=%s", [request.user.id])
+    '''
+    cursor.execute(
         "SELECT DISTINCT PL.Flag,B.User_id,FR.Price*FB.TotalSeats as 'Price', FB.TotalSeats as 'TotalSeats', "
         "A.AirCompany_Name as 'AirCompany_Name', F.Airplane_Number as 'Plane', F.Aircraft as 'Model', FR.Time as 'Time'"
         ", FR.Date as 'DOF', B.DateOfBooking as 'DOB', (B.PaidMoney) as 'Paid',B.MoneyToPay as 'Pending',"
@@ -120,6 +145,7 @@ def viewAirlinesPaymentLog(request):
         "JOIN database_flight_route FR ON (FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) "
         "JOIN database_air_company A ON (F.AirCompany_id = A.id) JOIN database_route R ON (R.id=FR.Route_id) "
         "WHERE PL.Admin_id=%s", [request.user.id])
+    '''
     data = namedtuplefetchall(cursor)
     # notification count
     cursor.execute("select count(*) as cnt from database_hotel_booking HB join database_booking B on "
@@ -262,7 +288,7 @@ def approveFlightBookings(request):
         "JOIN database_flight_route FR ON (FB.Flight_id = FR.id) "
         "JOIN database_flight F ON (FR.Flight_id = F.id) "
         "JOIN database_air_company A ON (F.AirCompany_id = A.id) JOIN database_route R ON (R.id=FR.Route_id) JOIN auth_user AU on (B.User_id=AU.id) "
-        "JOIN database_profile PR ON (PR.user_id = AU.id)  where FB.isApproved=0 AND FB.isCancellationApproved=0 AND B.Status<>0")
+        "JOIN database_profile PR ON (PR.user_id = AU.id)  where FB.isApproved=0 AND FB.isCancellationApproved=0 AND B.Status<>2")
     data = namedtuplefetchall(cursor)
     # notification count
     cursor.execute("select count(*) as cnt from database_hotel_booking HB join database_booking B on "

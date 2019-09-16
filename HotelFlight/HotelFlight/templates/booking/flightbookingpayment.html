@@ -160,19 +160,23 @@
                                                             {% with aircompany.uid|stringformat:"i" as ID %}
                                                                 `
                                                                 <img src="{% static 'media/user_'|add:ID|add:'/main/0.jpg' %}"
-                                                                     alt="" width="100%" height="20%">
+                                                                     alt="" width="100%" height="100%">
                                                             {% endwith %}
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
                                                         <div class="room_content">
-                                                            <div class="room_title"> Selected Flight: {{ flight.Plane }} </div>
+                                                            <div class="room_title"> Selected
+                                                                Flight: {{ flight.Plane }} </div>
 
-                                                            <div class="room_text">{{ flight.Src_Airport }}, {{ flight.Src }} To
-                                                               {{ flight.Dest_Airport }}, {{ flight.Dest }}</div>
+                                                            <div class="room_text">{{ flight.Src_Airport }}, {{ flight.Src }}
+                                                                To
+                                                                {{ flight.Dest_Airport }}, {{ flight.Dest }}</div>
                                                             <div class="room_text"> Time: {{ flight.Time }}</div>
                                                             <div class="room_text"> Date: {{ flight.Date }}</div>
-                                                            <div class="room_text"> Duration: {{ flight.Duration }} minutes</div>
+                                                            <div class="room_text"> Duration: {{ flight.Duration }}
+                                                                minutes
+                                                            </div>
 
                                                         </div>
                                                     </div>
@@ -187,63 +191,69 @@
                                             <hr>
                                         </div>
 
-                                    {% if multi == 'True' %}
-                                        <div class="hotel_title_container d-flex flex-lg-row flex-column">
-                                            <div class="hotel_title_content">
-                                                <h1 class="hotel_title">{{ aircompany2.Airlines }}</h1>
-                                                <div class="rating_r rating_r_4 hotel_rating">
-                                                    <i></i>
-                                                    <i></i>
-                                                    <i></i>
-                                                    <i></i>
-                                                    <i></i>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Room-->
-                                        <div class="rooms">
-                                            <h3>Selected flight :</h3>
-                                            <hr>
-                                            <div class="room">
-                                                <div class="row no-margin no-padding">
-                                                    <div class="col-lg-3 no-padding no-margin">
-                                                        <div class="">
-                                                            {% with aircompany2.uid|stringformat:"i" as ID %}
-                                                                `
-                                                                <img src="{% static 'media/user_'|add:ID|add:'/main/0.jpg' %}"
-                                                                     alt="" width="100%" height="20%">
-                                                            {% endwith %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-7">
-                                                        <div class="room_content">
-                                                            <div class="room_title"> Selected Flight: {{ flight2.Plane }} </div>
-
-                                                            <div class="room_text">{{ flight2.Src_Airport }}, {{ flight2.Src }} To
-                                                               {{ flight2.Dest_Airport }}, {{ flight2.Dest }}</div>
-                                                            <div class="room_text"> Time: {{ flight2.Time }}</div>
-                                                            <div class="room_text"> Date: {{ flight2.Date }}</div>
-                                                            <div class="room_text"> Duration: {{ flight2.Duration }} minutes</div>
-
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-2 text-lg-right">
-                                                        Price:<br/>
-                                                        <div class="offers_price">
-                                                            {{ flight2.Price }}‎৳<br/>
-                                                        </div>
+                                        {% if multi == 'True' %}
+                                            <div class="hotel_title_container d-flex flex-lg-row flex-column">
+                                                <div class="hotel_title_content">
+                                                    <h1 class="hotel_title">{{ aircompany2.Airlines }}</h1>
+                                                    <div class="rating_r rating_r_4 hotel_rating">
+                                                        <i></i>
+                                                        <i></i>
+                                                        <i></i>
+                                                        <i></i>
+                                                        <i></i>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <hr>
-                                        </div>
-                                    {% endif %}
+
+                                            <!-- Room-->
+                                            <div class="rooms">
+                                                <h3>Selected flight :</h3>
+                                                <hr>
+                                                <div class="room">
+                                                    <div class="row no-margin no-padding">
+                                                        <div class="col-lg-3 no-padding no-margin">
+                                                            <div class="">
+                                                                {% with aircompany2.uid|stringformat:"i" as ID %}
+                                                                    <img src="{% static 'media/user_'|add:ID|add:'/main/0.jpg' %}"
+                                                                         alt="" width="100%" height="100%">
+                                                                {% endwith %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-7">
+                                                            <div class="room_content">
+                                                                <div class="room_title"> Selected
+                                                                    Flight: {{ flight2.Plane }} </div>
+
+                                                                <div class="room_text">{{ flight2.Src_Airport }}, {{ flight2.Src }}
+                                                                    To
+                                                                    {{ flight2.Dest_Airport }}, {{ flight2.Dest }}</div>
+                                                                <div class="room_text"> Time: {{ flight2.Time }}</div>
+                                                                <div class="room_text"> Date: {{ flight2.Date }}</div>
+                                                                <div class="room_text"> Duration: {{ flight2.Duration }}
+                                                                    minutes
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2 text-lg-right">
+                                                            Price:<br/>
+                                                            <div class="offers_price">
+                                                                {{ flight2.Price }}‎৳<br/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                            </div>
+                                        {% endif %}
 
                                         <div class="contact_form_container">
                                             <div class="contact_title text-center">Confirm Booking</div>
                                             <div class="row" style="margin-top: 25px;">
                                                 <div class="col-lg-12">
+                                                    <div class="contact_item">
+                                                        <div align="left">Advanced Payment: {{ paidMoney }}</div>
+                                                    </div>
                                                     <div class="contact_item">
                                                         <div align="left">Enter valid card number :</div>
                                                         <input type="text" class="contact_form_email input_field"/>
@@ -251,23 +261,23 @@
                                                 </div>
                                             </div>
 
-                                                    <input type="hidden" name="source" value="{{ request.GET.source}}" />
-                                                    <input type="hidden" name="dest" value="{{ request.GET.dest}}" />
-                                                    <input type="hidden" name="depart" value="{{ request.GET.depart}}" />
-                                                    <input type="hidden" name="adult" value="{{ request.GET.adult}}" />
-                                                    <input type="hidden" name="FRID" value="{{ request.GET.FRID }}" />
-                                                    <input type="hidden" name="ID2" value="{{ request.GET.ID2}}" />
-                                                    <input type="hidden" name="ID1" value="{{ request.GET.ID1}}" />
-                                                    <input type="hidden" name="FIDS" value="{{ request.GET.FIDS }}" />
-                                                    <input type="hidden" name="FIDM1" value="{{ request.GET.FIDM1}}" />
-                                                    <input type="hidden" name="FIDM2" value="{{ request.GET.FIDM2}}" />
-                                                    <input type="hidden" name="uid" value="{{ user.id}}" />
-                                                <a href="flightbookingok?{{ request.GET.urlencode }}">
+                                            <input type="hidden" name="source" value="{{ request.GET.source }}"/>
+                                            <input type="hidden" name="dest" value="{{ request.GET.dest }}"/>
+                                            <input type="hidden" name="depart" value="{{ request.GET.depart }}"/>
+                                            <input type="hidden" name="adult" value="{{ request.GET.adult }}"/>
+                                            <input type="hidden" name="FRID" value="{{ request.GET.FRID }}"/>
+                                            <input type="hidden" name="ID2" value="{{ request.GET.ID2 }}"/>
+                                            <input type="hidden" name="ID1" value="{{ request.GET.ID1 }}"/>
+                                            <input type="hidden" name="FIDS" value="{{ request.GET.FIDS }}"/>
+                                            <input type="hidden" name="FIDM1" value="{{ request.GET.FIDM1 }}"/>
+                                            <input type="hidden" name="FIDM2" value="{{ request.GET.FIDM2 }}"/>
+                                            <input type="hidden" name="uid" value="{{ user.id }}"/>
+                                            <a href="flightbookingok?{{ request.GET.urlencode }}">
                                                 <button type="submit" id="form_submit_button"
                                                         class="form_submit_button button trans_200">Confirm booking
                                                 </button>
                                                 {% csrf_token %}
-                                            </form>
+                                                </form>
                                         </div>
                                     </div>
                                 </div>

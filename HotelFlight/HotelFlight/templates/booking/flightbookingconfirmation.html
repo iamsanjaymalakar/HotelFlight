@@ -128,8 +128,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-1"></div>
-                <div class="col-lg-8" style="margin-top:25px;margin-left:0px;">
+                <div class="col-lg-9" style="margin-top:25px;margin-left:0px;">
                     <div class="container">
                         <div class="row">
                             <div class="col-lg-12">
@@ -160,16 +159,14 @@
                                                     <div class="col-lg-3 no-padding no-margin">
                                                         <div class="">
                                                             {% with aircompany.uid|stringformat:"i" as ID %}
-                                                                `
                                                                 <img src="{% static 'media/user_'|add:ID|add:'/main/0.jpg' %}"
-                                                                     alt="" width="100%" height="20%">
+                                                                     alt="" width="100%" height="100%">
                                                             {% endwith %}
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
                                                         <div class="room_content">
                                                             <div class="room_title"> Selected Flight: {{ flight.Plane }} </div>
-
                                                             <div class="room_text">{{ flight.Src_Airport }}, {{ flight.Src }} To
                                                                {{ flight.Dest_Airport }}, {{ flight.Dest }}</div>
                                                             <div class="room_text"> Time: {{ flight.Time }}</div>

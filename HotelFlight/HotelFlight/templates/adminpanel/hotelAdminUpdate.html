@@ -44,8 +44,13 @@
                             <li>
                                 <a href="{% url 'hotelAdminDash' %}">Dashboard</a>
                             </li>
-                            <li>
-                                <a href="{% url 'hotelAdminNotifications' %}">Notifications</a>
+                            <li class="notification">
+                                <a href="{% url 'hotelAdminNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li class="active">
                                 <a href="{% url 'hotelAdminUpdate' %}">Update Hotel</a>
@@ -96,8 +101,10 @@
                                 <div class="contact_title text-center">
                                     Update information
                                     {% for message in messages %}
-                                        <div {% if message.extra_tags %} class="alert {{ message.extra_tags }}"{% endif %}>
-                                            <a class="close" href="" {% if message.extra_tags %} data-dismiss="{{ message.extra_tags }}"{% endif %}>×</a>
+                                        <div {% if message.extra_tags %}
+                                            class="alert {{ message.extra_tags }}"{% endif %}>
+                                            <a class="close" href="" {% if message.extra_tags %}
+                                               data-dismiss="{{ message.extra_tags }}"{% endif %}>×</a>
                                             {{ message }}
                                         </div>
                                     {% endfor %}

@@ -49,8 +49,13 @@
                             <li>
                                 <a href="{% url 'hotelAdminDash' %}">Dashboard</a>
                             </li>
-                            <li>
-                                <a href="{% url 'hotelAdminNotifications' %}">Notifications</a>
+                            <li class="notification">
+                                <a href="{% url 'hotelAdminNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li>
                                 <a href="{% url 'hotelAdminUpdate' %}">Update Hotel</a>

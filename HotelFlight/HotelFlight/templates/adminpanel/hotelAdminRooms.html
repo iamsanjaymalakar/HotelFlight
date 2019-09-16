@@ -4,6 +4,7 @@
 {% load url_replace %}
 {% load url_get %}
 {% load widget_tweaks %}
+{% load room_images %}
 
 
 {% block title %}Rooms | {{ request.user }}{% endblock title %}
@@ -44,6 +45,18 @@
             padding-bottom: 12px;
             background-color: #350a4e;
             color: white;
+            cursor: pointer;
+        }
+
+        #roomInput {
+            background-image: url({% static 'siteadmin/search.png' %});
+            background-position: 5px 5px;
+            background-repeat: no-repeat;
+            width: 100%;
+            font-size: 16px;
+            padding: 12px 20px 12px 50px;
+            border: 1px solid #ddd;
+            margin-bottom: 12px;
         }
     </style>
 
@@ -52,11 +65,9 @@
 {% block content %}
 
     <div class="offers">
-
         <div class="hero-image"
              style="height:24.5%;background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url({% static 'search/images/single_background.jpg' %})">
         </div>
-
         <!-- Sidebar -->
         <div class="">
             <div class="row">
@@ -65,14 +76,18 @@
                         <div class="sidebar-header">
                             <h3>Options</h3>
                         </div>
-
                         <ul class="list-unstyled components">
                             <p>View Rooms</p>
                             <li>
                                 <a href="{% url 'hotelAdminDash' %}">Dashboard</a>
                             </li>
-                            <li>
-                                <a href="{% url 'hotelAdminNotifications' %}">Notifications</a>
+                            <li class="notification">
+                                <a href="{% url 'hotelAdminNotifications' %}">
+                                    Notifications
+                                    {% if count > 0 %}
+                                        <span class="badge">{{ count }}</span>
+                                    {% endif %}
+                                </a>
                             </li>
                             <li>
                                 <a href="{% url 'hotelAdminUpdate' %}">Update Hotel</a>
@@ -95,32 +110,34 @@
                         </ul>
                     </nav>
                 </div>
-                <div class="col-lg-10" style="padding-right: 30px;">
+                <div class="col-lg-10" style="padding-right: 30px;margin-top: 20;">
+                    <input type="text" id="roomInput" onkeyup="searchTable()"
+                           placeholder="Search for name,type,wifi etc.."
+                           title="Type in a name,type,wifi etc.....">
                     <div class="rooms" style="margin-top: 20px;">
-
                         <!-- Room -->
-                        <table id="roomstable" width="100%">
+                        <table id="roomstable" width="100%" style="margin-bottom: 30">
                             <tr align="center">
                                 <th width="20%">
                                     Thumbnail
                                 </th>
-                                <th width="20%">
+                                <th width="20%" onclick="sortTable(1,false)">
                                     Room Details
                                 </th>
-                                <th>
+                                <th onclick="sortTable(2,false)">
                                     Wifi
                                 </th>
-                                <th>
+                                <th onclick="sortTable(3,false)">
                                     Breakfast
                                 </th>
-                                <th>
+                                <th onclick="sortTable(4,true)">
                                     Total Rooms
                                 </th>
-                                <th>
+                                <th onclick="sortTable(5,true)">
                                     Free Rooms
                                 </th>
-                                <th>
-                                    Price
+                                <th onclick="sortTable(6,true)">
+                                    Price/Room
                                 </th>
                                 <th>
                                     Modify
@@ -129,14 +146,18 @@
                             {% for room in rooms %}
                                 <tr align="center">
                                     <td>
+                                        {% room_images request.user.id room.Room.id as roomImages %}
                                         {% with request.user.id|stringformat:"i" as ID and room.Room.id|stringformat:"i" as rID %}
-                                            `
-                                            <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/0.jpg' %}"
-                                                 alt="" width="200px" height="200px" style="padding: 15px;">
+                                            {% for firstImage in roomImages %}
+                                                {% if forloop.first %}
+                                                    <img src="{% static 'media/user_'|add:ID|add:'/room_'|add:rID|add:'/'|add:firstImage %}"
+                                                         alt="" width="200px" height="200px" style="padding: 15px;">
+                                                {% endif %}
+                                            {% endfor %}
                                         {% endwith %}
                                     </td>
                                     <td>
-                                        {{ room.Room.id }}
+                                        ID : {{ room.Room.id }}
                                         <br>
                                         Type : {{ room.Room.RoomType }}
                                         <br>
@@ -173,8 +194,10 @@
                                         {{ room.Price }}
                                     </td>
                                     <td>
-                                        <a href="{% url 'hotelAdminRoomSingle' %}?roomID={{ room.Room.id }}"
-                                        <button class="button search_button" style="margin: 0px;">Update</button>
+                                        <a href="{% url 'hotelAdminRoomSingle' %}?roomID={{ room.Room.id }}">
+                                            <button class="button search_button" style="margin: 0;margin-bottom: 25;">
+                                                Update
+                                            </button>
                                         </a>
                                     </td>
                                 </tr>
@@ -185,6 +208,102 @@
             </div>
         </div>
     </div>
-    </div>
 
 {% endblock content %}
+
+{% block jscript %}
+    <script>
+        function sortTable(col, isNumber) {
+            let table = document.getElementById("roomstable");
+            let switching = true, shouldSwitch;
+            let asc = true, switchCount = 0, rows, i;
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    let x = rows[i].getElementsByTagName("TD")[col];
+                    let y = rows[i + 1].getElementsByTagName("TD")[col];
+                    if (asc) {
+                        if (isNumber) {
+                            console.log(Number(x.innerHTML));
+                            console.log(Number(y.innerHTML));
+                            if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                                console.log(x.innerHTML);
+                                console.log(y.innerHTML);
+                                console.log(true);
+                                console.log('\n\n');
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (isNumber) {
+                            if (Number(x.innerHTML) < Number(y.innerHTML)) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchCount++;
+                } else {
+                    if (switchCount === 0 && asc) {
+                        asc = false;
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        function searchTable() {
+            let colsToSearch = [1, 2, 3, 4, 5, 6];
+            let input = document.getElementById('roomInput');
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById('roomstable');
+            let row = table.getElementsByTagName('tr');
+            for (let i = 0; i < row.length; i++) {
+                let data = [];
+                for (let j = 0; j < colsToSearch.length; j++) {
+                    data.push(row[i].getElementsByTagName("td")[colsToSearch[j]]);
+                }
+                let isData = true;
+                for (let j = 0; j < data.length; j++) {
+                    if (data[j] == null) {
+                        isData = false;
+                    }
+                }
+                if (isData) {
+                    let val = [];
+                    for (let j = 0; j < data.length; j++) {
+                        val.push(data[j].textContent || data[j].innerText);
+                    }
+                    let displayFlag = false;
+                    for (let j = 0; j < val.length; j++) {
+                        if (val[j].toUpperCase().indexOf(filter) > -1) {
+                            displayFlag = true;
+                        }
+                    }
+                    if (displayFlag) {
+                        row[i].style.display = "";
+                    } else {
+                        row[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock jscript %}

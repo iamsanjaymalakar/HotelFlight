@@ -124,6 +124,9 @@
                         <table id="roomstable" width="100%">
                             <tr align="center">
                                 <th width="13%">
+                                    Booked By
+                                </th>
+                                <th width="13%">
                                     Hotel Name
                                 </th>
                                 <th width="13%">
@@ -160,6 +163,12 @@
                             {% for datum in data %}
                                 <tr align="center">
                                     <td>
+                                        {{ datum.name }} <br>
+                                        {{ datum.phn }} <br>
+                                        {{ datum.mail }} <br>
+                                        {{ datum.addr }} <br>
+                                    </td>
+                                    <td>
                                         {{ datum.Hotel_Name }}
                                     </td>
                                     <td>
@@ -190,8 +199,11 @@
                                         {{ datum.TotalRooms }}
                                     </td>
                                     <td>
-                                        {% if datum.Flag == 1 %} Credit
-                                        {% elif datum.Flag == 0 %} Debit
+                                        {% if datum.Flag == 1 %}
+                                            Credit: {{ datum.name }} pays {{ datum.PaidMoney }} to
+                                            {{ datum.Hotel_Name }}
+                                        {% elif datum.Flag == 0 %} Debit: {{ datum.Hotel_Name }} pays
+                                            {{ datum.MoneyToRefund }} to {{ datum.name }}
                                         {% endif %}
                                     </td>
                                 </tr>
