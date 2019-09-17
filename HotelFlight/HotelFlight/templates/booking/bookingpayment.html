@@ -18,9 +18,20 @@
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/responsive.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'gijgo/js/gijgo.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'adminpanel/sidebar.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'booking/DatPayment.css' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
+    <style>
+        .datpayment-form
+        {
+            width:500px;
+        }
+        pre
+        {
+            width:500px;
+            margin:auto;
+        }
+    </style>
 {% endblock css %}
 
 {% block content %}
@@ -121,8 +132,6 @@
                                                 {% csrf_token %}
                                             </form>
                                         </div>
-
-
                                     </div>
 
                                 </div>
@@ -210,35 +219,67 @@
 
                                         <div class="contact_form_container">
                                             <div class="contact_title text-center">Confirm Booking</div>
-                                            <div class="row" style="margin-top: 25px;">
+                                            <div class="row" style="margin-top: 25px;margin-bottom: 25px;">
                                                 <div class="col-lg-12">
                                                     <div class="contact_item">
-                                                        <div align="left">Advanced Payment : {{ paidMoney }}</div>
-                                                    </div>
-                                                    <div class="contact_item">
-                                                        <div align="left">Enter valid card number :</div>
-                                                        <input type="text" class="contact_form_email input_field"/>
+                                                        <div align="center">Advanced Payment : {{ paidMoney }}</div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <input type="hidden" name="hoteldest"
-                                                   value="{{ request.GET.hoteldest }}"/>
-                                            <input type="hidden" name="checkin"
-                                                   value="{{ request.GET.checkin }}"/>
-                                            <input type="hidden" name="checkout"
-                                                   value="{{ request.GET.checkout }}"/>
-                                            <input type="hidden" name="hid" value="{{ request.GET.hid }}"/>
-                                            <input type="hidden" name="huid"
-                                                   value="{{ request.GET.huid }}"/>
-                                            <input type="hidden" name="hrid"
-                                                   value="{{ request.GET.hrid }}"/>
-                                            <input type="hidden" name="uid" value="{{ user.id }}"/>
-                                            <input type="hidden" name="room" value="{{ request.GET.room }}"/>
-                                            <a href="bookingok?{{ request.GET.urlencode }}">
-                                                <button type="submit" id="form_submit_button"
-                                                        class="form_submit_button button trans_200">Confrim booking
-                                                </button>
-                                            </a>
+                                           <form action="" method="get" id="payment-form" class="datpayment-form">
+                                                <div class="dpf-title">
+                                                    Payment by credit card
+                                                    <div class="accepted-cards-logo"></div>
+                                                </div>
+                                                <div class="dpf-card-placeholder"></div>
+                                                <div class="dpf-input-container">
+                                                    <div class="dpf-input-row">
+                                                        <label class="dpf-input-label">Credit Card Number</label>
+                                                        <div class="dpf-input-container with-icon">
+                                                            <span class="dpf-input-icon"><i class="fa fa-credit-card" aria-hidden="true"></i></span>
+                                                            <input type="text" class="dpf-input" size="20" data-type="number">
+                                                        </div>
+                                                    </div>
+                                                    <div class="dpf-input-row">
+                                                        <div class="dpf-input-column">
+                                                            <input type="hidden" size="2" data-type="exp_month" placeholder="MM">
+                                                            <input type="hidden" size="2" data-type="exp_year" placeholder="YY">
+                                                            <label class="dpf-input-label">Expiration Date</label>
+                                                            <div class="dpf-input-container">
+                                                                <input type="text" class="dpf-input" data-type="expiry">
+                                                            </div>
+                                                        </div>
+                                                        <div class="dpf-input-column">
+                                                            <label class="dpf-input-label">Code</label>
+                                                            <div class="dpf-input-container">
+                                                                <input type="text" class="dpf-input" size="4" data-type="cvc">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="dpf-input-row">
+                                                        <label class="dpf-input-label">Full Name</label>
+                                                        <div class="dpf-input-container">
+                                                            <input type="text" size="4" class="dpf-input" data-type="name">
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" class="dpf-submit" style="display: none">
+                                                          <span class="btn-active-state">
+                                                              Submit
+                                                          </span>
+                                                        <span class="btn-loading-state">
+                                                              <i class="fa fa-refresh "></i>
+                                                          </span>
+                                                    </button>
+                                                    <div style="margin-bottom: 25px;;" align="center">
+                                                        <a href="bookingok?{{ request.GET.urlencode }}">
+                                                            <button type="submit" id="form_submit_button"
+                                                                    class="form_submit_button button trans_200">
+                                                                Confirm booking
+                                                            </button>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -249,9 +290,14 @@
             </div>
         </div>
     </div>
+
 {% endblock content %}
 
 {% block jscript %}
+
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+<script type="text/javascript" src="{% static 'booking/DatPayment.js' %}"></script>
+
 <script>
         function getAllUrlParams(url) {
       // get query string from url (optional) or window
@@ -333,5 +379,70 @@
         format: 'yyyy-mm-dd',
         size: 'small'
     });
+
+    var payment_form = new DatPayment({
+        form_selector: '#payment-form',
+        card_container_selector: '.dpf-card-placeholder',
+
+        number_selector: '.dpf-input[data-type="number"]',
+        date_selector: '.dpf-input[data-type="expiry"]',
+        cvc_selector: '.dpf-input[data-type="cvc"]',
+        name_selector: '.dpf-input[data-type="name"]',
+
+        submit_button_selector: '.dpf-submit',
+
+        placeholders: {
+            number: '•••• •••• •••• ••••',
+            expiry: '••/••',
+            cvc: '•••',
+            name: 'DUPONT'
+        },
+
+        validators: {
+            number: function (number) {
+                return Stripe.card.validateCardNumber(number);
+            },
+            expiry: function (expiry) {
+                var expiry = expiry.split(' / ');
+                return Stripe.card.validateExpiry(expiry[0] || 0, expiry[1] || 0);
+            },
+            cvc: function (cvc) {
+                return Stripe.card.validateCVC(cvc);
+            },
+            name: function (value) {
+                return value.length > 0;
+            }
+        }
+    });
+
+    var demo_log_div = document.getElementById("demo-log");
+
+    payment_form.form.addEventListener('payment_form:submit', function (e) {
+        var form_data = e.detail;
+        payment_form.unlockForm();
+        demo_log_div.innerHTML += "<br>" + JSON.stringify(form_data);
+    });
+
+    payment_form.form.addEventListener('payment_form:field_validation_success', function (e) {
+        var input = e.detail;
+
+        demo_log_div.innerHTML += "<br>field_validation_success:" + input.getAttribute("data-type");
+
+    });
+
+    payment_form.form.addEventListener('payment_form:field_validation_failed', function (e) {
+        var input = e.detail;
+
+        demo_log_div.innerHTML += "<br>field_validation_failed:" + input.getAttribute("data-type");
+    });
+    /*
+     NUMBER              BRAND
+            _____________________________________
+
+            4242424242424242	Visa
+            5555555555554444	Mastercard
+            378282246310005     American Express
+            6011111111111117	Discover
+    */
 </script>
 {% endblock jscript%}
