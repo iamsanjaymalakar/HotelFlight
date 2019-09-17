@@ -13,12 +13,12 @@
     <link href="{% static 'search/plugins/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet"
           type="text/css">
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/search.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'search/styles/single_listing_styles.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/responsive.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'gijgo/js/gijgo.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'adminpanel/sidebar.css' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'adminpanel/noti/notifications.css' %}">
     <style>
         #roomstable {
             font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
@@ -89,7 +89,7 @@
                             <li>
                                 <a href="{% url 'password' %}">Change Password</a>
                             </li>
-                            <li>
+                            <li class="notification">
                                 <a href="{% url 'userNotifications' %}">
                                     Notifications
                                     {% if count > 0 %}
@@ -209,6 +209,55 @@
             </div>
         </div>
     </div>
-    </div>
 
 {% endblock content %}
+
+{% block jscript %}
+    <script src="{% static 'adminpanel/noti/notifications.js' %}"></script>
+    <script>
+        const notiSuccess = window.createNotification({
+            closeOnClick: true,
+            displayCloseButton: true,
+            positionClass: 'nfc-bottom-right',
+            onclick: false,
+            showDuration: 90000,
+            theme: 'success'
+        });
+        const notiError = window.createNotification({
+            closeOnClick: true,
+            displayCloseButton: true,
+            positionClass: 'nfc-bottom-right',
+            onclick: false,
+            showDuration: 90000,
+            theme: 'error'
+        });
+        //hotel
+        {% for datum in dataHotel %}
+            {% if datum.Status == 1 %}
+                notiSuccess({
+                    title: 'Booking confirmed by {{ datum.Hotel_Name }} ({{ datum.Hotel_Location }})',
+                    message: 'Your booking at {{ datum.Hotel_Name }} ({{ datum.Hotel_Location }}) on {{ datum.TotalRooms }} {{ datum.RoomType }} room(s) [{{ datum.Checkin_Date }}] {{ datum.Checkout_Date }}] has been confirmed.'
+                });
+            {% elif datum.Status == 2 %}
+                notiError({
+                    title: 'Booking cancelled by {{ datum.Hotel_Name }} ({{ datum.Hotel_Location }})',
+                    message: 'Your booking at {{ datum.Hotel_Name }} ({{ datum.Hotel_Location }}) on {{ datum.TotalRooms }} {{ datum.RoomType }} room(s) [{{ datum.Checkin_Date }}] {{ datum.Checkout_Date }}] has been cancelled.'
+                });
+            {% endif %}
+        {% endfor %}
+        // flight
+        {% for datum in dataFlight %}
+            {% if datum.Status == 1 %}
+                notiSuccess({
+                    title: 'Booking confirmed by {{ datum.AirCompany_Name }}',
+                    message: 'Your booking of Flight number: {{ datum.Plane }} on {{ datum.DOF }} at  {{ datum.Date }}of {{ datum.TotalSeats }} seat(s) has been confirmed by {{ datum.AirCompany_Name }}.'
+                });
+            {% elif datum.Status == 2 %}
+                notiError({
+                    title: 'Booking cancelled by {{ datum.AirCompany_Name }}',
+                    message: 'Your booking of Flight number: {{ datum.Plane }} on {{ datum.DOF }} at  {{ datum.Date }}of {{ datum.TotalSeats }} seat(s) has been cancelled by {{ datum.AirCompany_Name }}.'
+                });
+            {% endif %}
+        {% endfor %}
+    </script>
+{% endblock jscript %}

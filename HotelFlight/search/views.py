@@ -8,6 +8,7 @@ import os
 from django.utils.encoding import smart_str
 from geopy import geocoders
 from geopy.exc import GeocoderServiceError
+from database.models import Hotel
 
 EASY_MAPS_GOOGLE_KEY = "AIzaSyATg_isuGSCHIlJamrxAXfkFDTYhIz7ytM"
 
@@ -43,7 +44,10 @@ def namedtuplefetchall(cursor):
 def homepage(request):
     hotelForm = SearchHotelForm()
     flightForm = SearchFlightForm()
-    return render(request, "search/homepage.html", {'hotelForm': hotelForm, 'flightForm': flightForm})
+    # data for autocomplete
+    dataHotel = Hotel.objects.all()
+    return render(request, "search/homepage.html",
+                  {'hotelForm': hotelForm, 'flightForm': flightForm, 'dataHotel': dataHotel})
 
 
 def searchHotelPage(request):

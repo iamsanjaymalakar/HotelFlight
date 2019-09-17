@@ -1,6 +1,6 @@
 {% extends "search/base.html" %}
 
-{% load staticfiles %}
+{% load static %}
 {% load url_replace %}
 {% load url_get %}
 {% load widget_tweaks %}
@@ -41,7 +41,6 @@
                             <div class="row no-margin">
                                 <div class="col no-padding">
                                     <!-- Search Tabs -->
-
                                     <div class="search_tabs_container">
                                         <div class="search_tabs d-flex flex-lg-row flex-column align-items-lg-center align-items-start justify-content-lg-between justify-content-start">
                                             <div class="search_tab active d-flex flex-row align-items-center justify-content-lg-center justify-content-start">
@@ -150,10 +149,12 @@
                                     <ul>
                                         <li class="sort_btn" data-isotope-option='{ "sortBy": "original-order" }'>
                                             <span>default</span></li>
-                                        <li class="sort_btn" data-isotope-option='{ "sortBy": "name" }'>
-                                            <span>alphabetical</span>
+                                        <li class="sort_btn" data-isotope-option='{ "sortBy": "name", "sortAscending": true }'
+                                            data-parent=".price_sorting"><span>ascending</span></li>
+                                        <li class="sort_btn" data-isotope-option='{ "sortBy": "name", "sortAscending": false }'
+                                            data-parent=".price_sorting"><span>descending</span>
                                         </li>
-                                    </ul>
+                                     </ul>
                                 </li>
                                 <li>
                                     <span class="sorting_text">stars</span>
@@ -209,7 +210,7 @@
                                                 <!--<img src="{% static 'search/images/offer_1.jpg' %}" alt="" height="300"
                                                      width="300">-->
                                             </div>
-                                            <div class="offer_name"><a href="{% url 'hotelRoomsPage' %}?huid={{hotel.ID}}&hid={{hotel.HID}}&{{ request.GET.urlencode }}">{{ hotel.Hotel_Name }}</a>
+                                            <div class="offer_name myhotelname"><a href="{% url 'hotelRoomsPage' %}?huid={{hotel.ID}}&hid={{hotel.HID}}&{{ request.GET.urlencode }}">{{ hotel.Hotel_Name }}</a>
                                             </div>
                                         </div>
                                     </div>
@@ -376,6 +377,10 @@
                 var price = $(itemElem).find('.offers_price').text().replace('‎৳', '').replace("per night", "");
                 return parseFloat(price);
             },
+            name: function (itemElem) {
+                var hotelname = $(itemElem).find('.myhotelname').text().trim();
+                return hotelname;
+            }
         }
     });
 
@@ -388,7 +393,6 @@
             parent.text($(this).text());
             var option = $(this).attr('data-isotope-option');
             option = JSON.parse( option );
-            console.log(option)
             $offers.isotope( option );
         });
     });
