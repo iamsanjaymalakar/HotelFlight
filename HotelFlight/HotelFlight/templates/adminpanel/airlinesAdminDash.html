@@ -38,22 +38,21 @@
                         <div class="sidebar-header">
                             <h3>Options</h3>
                         </div>
-
                         <ul class="list-unstyled components">
                             <p>Dashboard</p>
                             <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li class="notification">
                                 <a href="{% url 'airlinesAdminNotifications' %}">
                                     Notifications
-                                    {% if count > 0 %}
-                                        <span class="badge">{{ count }}</span>
+                                    {% if countN > 0 %}
+                                        <span class="badge">{{ countN }}</span>
                                     {% endif %}
                                 </a>
                             </li>
 
-                             <li>
+                            <li>
                                 <a href="{% url 'airlinesAdminAddRoute' %}">Add Route</a>
                             </li>
                             <li>
@@ -80,9 +79,106 @@
                     </nav>
                 </div>
                 <div class="col-lg-9">
+                    <div class="row" style="margin-top: 25px;">
+                        <div class="col-lg-8">
+                            <canvas id="chartPrice" height="200px;"></canvas>
+                            <div align="center">
+                                <b>Total Income: </b> {{ income }} BDT
+                            </div>
+                        </div>
+                        <div class="col-lg-4" style="margin-top: 50px;">
+                            <canvas id="chartPie" height="300px;"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
 {% endblock content %}
+
+{% block jscript %}
+
+    <script src="{% static 'adminpanel/noti/notifications.js' %}"></script>
+    <script src="{% static 'adminpanel/chart.js' %}"></script>
+    <script>
+        // for chart
+        let xLabel = [];
+        let yLabel = [];
+        let color = [];
+        let myLabel = [];
+        let randR, randG, randB, temp;
+        {% for datum in dataFlight %}
+            xLabel.push('{{ datum.Date }}');
+            yLabel.push({{ datum.Total }});
+            randR = Math.floor((Math.random() * 130) + 70);
+            randG = Math.floor((Math.random() * 130) + 70);
+            randB = Math.floor((Math.random() * 130) + 70);
+            temp = "rgb(" + randR + ", " + randG + ", " + randB + ")";
+            color.push(temp);
+            myLabel.push('{{ datum.Checkin_Date }} ({{ datum.cnt }})');
+        {% endfor %}
+        console.log(xLabel);
+        console.log(yLabel);
+        let chartPrice = document.getElementById('chartPrice').getContext('2d');
+        let chartPriceO = new Chart(chartPrice, {
+            type: 'bar',
+            data: {
+                labels: myLabel,
+                datasets: [{
+                    label: myLabel,
+                    backgroundColor: color,
+                    borderColor: color,
+                    data: yLabel
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'Revenue from Flight Booking per day'
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+        let yLabel2 = [];
+        let xLabel2 = [];
+        color = [];
+        {% for datum in dataRoute %}
+            xLabel2.push('{{ datum.Source }} - {{ datum.Destination }}');
+            yLabel2.push({{ datum.TotalSeats}});
+            randR = Math.floor((Math.random() * 130) + 70);
+            randG = Math.floor((Math.random() * 130) + 70);
+            randB = Math.floor((Math.random() * 130) + 70);
+            temp = "rgb(" + randR + ", " + randG + ", " + randB + ")";
+            color.push(temp);
+        {% endfor %}
+        data = {
+            datasets: [{
+                data: yLabel2,
+                backgroundColor: color
+            }],
+            labels: xLabel2
+        };
+        let chartPie = document.getElementById('chartPie').getContext('2d');
+        let chartPieO = new Chart(chartPie, {
+            type: 'pie',
+            data: data,
+            options: {
+                title: {
+                    display: true,
+                    text: 'Total booked seats per flight'
+                }
+            }
+        });
+    </script>
+
+{% endblock jscript %}

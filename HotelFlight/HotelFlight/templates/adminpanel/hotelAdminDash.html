@@ -143,7 +143,6 @@
             color.push(temp);
             myLabel.push('{{ datum.Checkin_Date }} ({{ datum.cnt }})');
         {% endfor %}
-        console.log(myLabel);
         let chartPrice = document.getElementById('chartPrice').getContext('2d');
         let chartPriceO = new Chart(chartPrice, {
             type: 'bar',

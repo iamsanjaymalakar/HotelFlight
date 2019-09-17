@@ -70,11 +70,11 @@
                             <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li class="notification">
                                 <a href="{% url 'airlinesAdminNotifications' %}">
                                     Notifications
-                                    {% if count > 0 %}
-                                        <span class="badge">{{ count }}</span>
+                                    {% if countN > 0 %}
+                                        <span class="badge">{{ countN }}</span>
                                     {% endif %}
                                 </a>
                             </li>
@@ -118,10 +118,10 @@
                                     Flight details
                                 </th>
                                 <th width="15%">
-                                    Date of Booking
+                                    Itinerary
                                 </th>
                                 <th width="15%">
-                                    Date of flight
+                                    Date of Booking
                                 </th>
                                 <th>
                                     No of seats
@@ -141,13 +141,19 @@
                                         {{ datum.email }}
                                     </td>
                                     <td>
-                                        Airplane Number : {{ datum.airplanenumber }}
+                                        Airplane number: {{ datum.Plane }} <br>
+                                       Airplane model: {{ datum.Model }} <br>
+                                        Date : {{ datum.dof }}<br>
+                                        Time : {{ datum.Time }}<br>
+                                        Duration(in minutes) : {{ datum.Duration }}
+                                    </td>
+                                    <td>
+                                        {{ datum.SRC }}<br>
+                                        to<br>
+                                        {{ datum.DEST }}
                                     </td>
                                     <td>
                                         {{ datum.dob }}
-                                    </td>
-                                    <td>
-                                        {{ datum.dof }}
                                     </td>
                                     <td>
                                         {{ datum.seats }}
@@ -165,7 +171,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
 {% endblock content %}

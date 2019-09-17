@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Add Room | {{ request.user }}{% endblock title %}
+{% block title %}Add Route | {{ request.user }}{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -39,14 +39,15 @@
                             <h3>Options</h3>
                         </div>
                         <ul class="list-unstyled components">
+                            <p>Add Route</p>
                             <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li class="notification">
                                 <a href="{% url 'airlinesAdminNotifications' %}">
                                     Notifications
-                                    {% if count > 0 %}
-                                        <span class="badge">{{ count }}</span>
+                                    {% if countN > 0 %}
+                                        <span class="badge">{{ countN }}</span>
                                     {% endif %}
                                 </a>
                             </li>

@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Update Hotel | {{ request.user }} {% endblock title %}
+{% block title %}Update Flight | {{ request.user }} {% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -44,15 +44,14 @@
                             <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
                             </li>
-                            <li class="">
+                            <li class="notification">
                                 <a href="{% url 'airlinesAdminNotifications' %}">
                                     Notifications
-                                    {% if count > 0 %}
-                                        <span class="badge">{{ count }}</span>
+                                    {% if countN > 0 %}
+                                        <span class="badge">{{ countN }}</span>
                                     {% endif %}
                                 </a>
                             </li>
-
                              <li>
                                 <a href="{% url 'airlinesAdminAddRoute' %}">Add Route</a>
                             </li>

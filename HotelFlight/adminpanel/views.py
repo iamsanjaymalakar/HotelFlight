@@ -294,21 +294,44 @@ def hoteladmincalender(request):
 
 
 def airlinesadmindash(request):
-    return render(request, "adminpanel/airlinesAdminDash.html")
+    cursor = connection.cursor()
+    cursor.execute("SELECT sum(B.MoneyToPay+B.PaidMoney) as 'Total', FR.Date as 'Date', AC.AirCompany_Name as 'Name' "
+                   "FROM auth_user AU JOIN database_air_company AC ON AU.id=AC.CompanyAdmin_id JOIN database_flight F "
+                   "ON AC.id=F.AirCompany_id JOIN database_flight_route FR ON F.id=FR.Flight_id JOIN "
+                   "database_flight_booking FB ON FR.id=FB.Flight_id JOIN database_booking B ON FB.Booking_id=B.id "
+                   "WHERE AU.id=%s GROUP BY FR.Date order by FR.Date", [request.user.id])
+    dataFlight = namedtuplefetchall(cursor)
+    income = 0
+    for datum in dataFlight:
+        income += datum.Total
+    cursor.execute(
+        "SELECT sum(FB.TotalSeats) as 'TotalSeats', AC.AirCompany_Name 'Name', R.Source as 'Source', R.Destination as"
+        " 'Destination' FROM auth_user AU JOIN database_air_company AC ON AU.id=AC.CompanyAdmin_id "
+        "JOIN database_flight F ON AC.id=F.AirCompany_id JOIN database_flight_route FR ON F.id=FR.Flight_id JOIN "
+        "database_route R ON FR.Route_id=R.id JOIN database_flight_booking FB ON FR.id=FB.Flight_id JOIN "
+        "database_booking B ON FB.Booking_id=B.id WHERE AU.id=%s GROUP BY R.Destination, R.Source", [request.user.id])
+    dataRoute = namedtuplefetchall(cursor)
+    # notification count
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminDash.html",
+                  {'countN': countN, 'dataFlight': dataFlight, 'dataRoute': dataRoute, 'income': income})
 
 
 def airlinesadminbookings(request):
     cursor = connection.cursor()
     cursor.execute(
         "SELECT U.first_name || ' ' || U.last_name as 'name',U.email as 'email',P.Phone as 'phn',"
-        "F.Airplane_Number as 'airplanenumber',B.DateOfBooking as 'dob',FR.Date as 'dof',(B.PaidMoney) "
-        "as 'Paid',B.MoneyToPay as 'Pending', FB.TotalSeats as 'seats' "
+        "F.Airplane_Number as 'Plane',F.AirCraft as 'Model',B.DateOfBooking as 'dob',FR.Date as 'dof',(B.PaidMoney) "
+        "as 'Paid',B.MoneyToPay as 'Pending', FB.TotalSeats as 'seats', "
+        "FR.Source_Airport || ',' || R.Source as 'SRC', FR.Destination_Airport || ',' || R.Destination as 'DEST',"
+        "FR.Time as 'Time', FR.Duration as 'Duration' "
         "FROM database_flight_booking FB JOIN database_booking B ON (B.id = FB.Booking_id) "
         "JOIN database_flight_route FR ON (FR.id = FB.Flight_id) "
         "JOIN database_flight F ON (F.id = FR.Flight_id) "
         "JOIN database_air_company A ON (F.AirCompany_id = A.id) "
         "JOIN auth_user U on (U.id = B.user_id) "
         "JOIN database_profile P on(P.user_id=U.id) "
+        "JOIN database_route R on (R.id=FR.Route_id) "
         "WHERE A.CompanyAdmin_id = %s "
         "", [request.user.id])
     data = namedtuplefetchall(cursor)
@@ -316,7 +339,8 @@ def airlinesadminbookings(request):
     for datum in data:
         print(datum.seats)
     # return render(request,"adminpanel/airlinesAdminDash.html")
-    return render(request, "adminpanel/airlinesAdminBookings.html", {'data': data})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminBookings.html", {'data': data, 'countN': countN})
 
 
 def airlinesadminaddroute(request):
@@ -339,7 +363,8 @@ def airlinesadminaddroute(request):
             messages.error(request, 'Invalid input', extra_tags='alert-danger')
     else:
         addrouteform = FlightAddRouteForm()
-    return render(request, "adminpanel/airlinesAdminAddRoute.html", {'addrouteform': addrouteform})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminAddRoute.html", {'addrouteform': addrouteform, 'countN': countN})
 
 
 def airlinesadminaddflightroute(request):
@@ -362,8 +387,8 @@ def airlinesadminaddflightroute(request):
             print(time)
             cursor = connection.cursor()
             cursor.execute("SELECT * FROM database_flight_route FR JOIN database_flight F ON(FR.Flight_id = F.id) "
-                           "JOIN database_route R ON (R.id = FR.Route_id) JOIN database_cancellation_policy CP ON (CP.id=FR.Cancellation_Policy_id) WHERE F.id = %s AND R.id = %s AND FR.Date = %s  AND CP.id = %s"
-                           "", [id2, id1, date, id3])
+                           "JOIN database_route R ON (R.id = FR.Route_id) JOIN database_cancellation_policy CP ON (CP.id=FR.Cancellation_Policy_id) WHERE F.id = %s AND R.id = %s AND FR.Date = %s "
+                           "", [id2, id1, date])
             results = cursor.fetchone()
             if not results:
                 flight_route = Flight_Route(Route=Route.objects.get(pk=id1),
@@ -383,12 +408,15 @@ def airlinesadminaddflightroute(request):
             messages.error(request, 'Invalid input', extra_tags='alert-danger')
     else:
         addflightrouteform = FlightAddFlightRoute(my_arg=request.user.id)
-    return render(request, "adminpanel/airlinesAdminAddFlightRoute.html", {'addflightrouteform': addflightrouteform})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminAddFlightRoute.html",
+                  {'addflightrouteform': addflightrouteform, 'countN': countN})
 
 
 def airlinesadminflights(request):
     flights = Flight.objects.all().filter(AirCompany=Air_Company.objects.get(CompanyAdmin=request.user.id))
-    return render(request, "adminpanel/airlinesAdminFlights.html", {'flights': flights})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminFlights.html", {'flights': flights, 'countN': countN})
 
 
 def airlinesadminflightsingle(request):
@@ -405,7 +433,9 @@ def airlinesadminflightsingle(request):
 
     else:
         updateForm = FlightUpdateForm()
-    return render(request, "adminpanel/airlinesAdminFlightSingle.html", {'form': updateForm, 'flight': flight})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminFlightSingle.html",
+                  {'form': updateForm, 'flight': flight, 'countN': countN})
 
 
 def airlinesadminaddflight(request):
@@ -423,7 +453,7 @@ def airlinesadminaddflight(request):
             except Flight.DoesNotExist:
                 print("does not exist")
                 flight = Flight(Airplane_Number=airplanenumber, Aircraft=aircraft, TotalSeats=totalseats,
-                                Air_Company=Air_Company.objects.get(CompanyAdmin=adminid))
+                                AirCompany=Air_Company.objects.get(CompanyAdmin=adminid))
                 flight.save()
                 messages.success(request, 'Added successfully', extra_tags='alert-success')
         else:
@@ -431,7 +461,8 @@ def airlinesadminaddflight(request):
 
     else:
         addflightform = FlightAddFlight()
-    return render(request, "adminpanel/airlinesAdminAddFlight.html", {'addflightform': addflightform})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminAddFlight.html", {'addflightform': addflightform, 'countN': countN})
 
 
 def airlinesadmincalendar(request):
@@ -449,10 +480,12 @@ def airlinesadmincalendar(request):
     for datum in data:
         print(datum.seats)
     # return render(request,"adminpanel/airlinesAdminDash.html")
-    return render(request, "adminpanel/airlinesAdminCalendar.html", {'data': data})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminCalendar.html", {'data': data, 'countN': countN})
 
 
 def airlinesAdminBookingsToday(request):
+    print("here")
     airlines = Air_Company.objects.get(CompanyAdmin=request.user.id)
     date = request.GET.get("date", "default")
     cursor = connection.cursor()
@@ -487,7 +520,8 @@ def airlinesAdminBookingsToday(request):
             "WHERE A.CompanyAdmin_id = %s AND FR.Date<=%s"
             "", [request.user.id, date])
     data = namedtuplefetchall(cursor)
-    return render(request, "adminpanel/airlinesAdminBookingsToday.html", {'data': data})
+    countN = BookingLog.objects.filter(Actor=1, notified=0, Admin_id=request.user.id).count()
+    return render(request, "adminpanel/airlinesAdminBookingsToday.html", {'data': data, 'countN': countN})
 
 
 def airlinesadminbookingconfirm(request):

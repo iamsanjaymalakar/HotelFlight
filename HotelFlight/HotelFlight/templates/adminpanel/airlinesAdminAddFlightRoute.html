@@ -6,7 +6,7 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Add Room | {{ request.user }}{% endblock title %}
+{% block title %}Add Route | {{ request.user }}{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'search/styles/bootstrap4/bootstrap.min.css' %}">
@@ -46,7 +46,14 @@
                             <li class="">
                                 <a href="{% url 'airlinesAdminDash' %}">Dashboard</a>
                             </li>
-
+                            <li class="notification">
+                                <a href="{% url 'airlinesAdminNotifications' %}">
+                                    Notifications
+                                    {% if countN > 0 %}
+                                        <span class="badge">{{ countN }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
                              <li>
                                 <a href="{% url 'airlinesAdminAddRoute' %}">Add Route</a>
                             </li>
@@ -62,6 +69,9 @@
 
                             <li class="">
                                 <a href="{% url 'airlinesAdminBookings' %}">View Bookings</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'airlinesAdminBookingsToday' %}">View Today's Bookings</a>
                             </li>
                             <li>
                                 <a href="{% url 'airlinesAdminCalendar' %}">Calendar</a>
@@ -131,7 +141,7 @@
                                 <div class="col-lg-12">
                                     <div class="contact_item">
                                         <div align="left">Time :</div>
-                                      <input name="Time" style="color:black;" class="contact_form_email input_field" required id="id_Time">
+                                        {% render_field addflightrouteform.Time class="contact_form_email input_field" style="color:black;" %}
                                     </div>
                                 </div>
                             </div>
@@ -188,8 +198,5 @@
     });
     $('#id_Flight').dropdown();
     $('#id_Cancellation_Policy').dropdown();
-    $('#id_Time').timepicker();
-
-
 </script>
 {% endblock jscript %}
