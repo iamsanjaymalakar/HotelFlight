@@ -6,7 +6,12 @@ from django.db import connection
 from collections import namedtuple
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+import smtplib
 
 
 def namedtuplefetchall(cursor):
@@ -91,6 +96,10 @@ def BookingConfirmationPage(request):
     dateCount = daysBetween(checkIn, checkOut)
     hotelRoomID = request.GET.get('hrid', '')
     adultCount = request.GET.get('adult', '')
+    FirstName = request.GET.get('first_name', '')
+    LastName = request.GET.get('last_name', '')
+    Email = request.GET.get('email', '')
+    Phone = request.GET.get('phone', '')
     cursor = connection.cursor()
     cursor.execute("SELECT R.RoomType, R.SingleBedCount, R.DoubleBedCount,HR.Room_id as 'roomID',HR.Price*%s as "
                    "'NPrice',HR.Price*%s*%s as 'Price',R.AirConditioner,HR.Complimentary_Breakfast,HR.wifi FROM "
@@ -129,33 +138,43 @@ def BookingConfirmationPage(request):
     hotelRoomObject = Hotel_Room.objects.get(id=hotelRoomID)
     hotelRoomObject.FreeRoomCount -= int(roomCount)
     hotelRoomObject.save()
-    '''
+
+
     # generate confirmation mail
-    # create message object instance
-    print(FirstName)
-    print(LastName)
-    p = canvas.Canvas('./booking/pdfs/ex.pdf')
+    p = canvas.Canvas('./booking/pdfs/Itinerary.pdf')
     p.drawString(250, 700, "Itinerary")
     Fname = "First Name: " + FirstName
     Lname = "Last Name: " + LastName
     Contact = "Contact No.: " + Phone
     HotelName = "Hotel Name: " + hotel[0].Hotel_Name
-    InDate = "Check In: " + checkin
-    OutDate = "Check Out: " + checkout
-    BookAmount = "Booking Amount: " + str(PaidMoney)
-    RestAmount = "More to Pay: " + str(MoneyToPay)
+    InDate = "Check In: " + checkIn
+    OutDate = "Check Out: " + checkOut
+    TotalNights = "Total Night(s): " + str(dateCount)
+    RoomType = "Room Type: " + room[0].RoomType
+    RoomPrice = "Price per Room: " + str(price)
+    TotalRoom = "Total Room(s): " + str(roomCount)
+    TotalAmount = int(price) * int(dateCount) * int(roomCount)
+    TotalPrice = "Total Amount: " + str(price) + "x" + str(dateCount) + "x" + str(roomCount) + "= " + str(TotalAmount)
+    BookAmount = "Booking Amount: " + str(paidMoney)
+    RestAmount = "More to Pay: " + str(moneyToPay)
     p.drawString(100, 620, "Personal Information")
     p.drawString(100, 600, Fname)
     p.drawString(100, 580, Lname)
     p.drawString(100, 560, Contact)
-    p.drawString(100, 500, "Booking Information")
+    p.drawString(100, 510, "Booking Information")
     p.drawString(100, 480, HotelName)
     p.drawString(100, 460, InDate)
     p.drawString(100, 440, OutDate)
-    p.drawString(100, 420, BookAmount)
-    p.drawString(100, 400, RestAmount)
-    p.drawString(100, 350, "This booking has been confirmed.")
+    p.drawString(100, 420, TotalNights)
+    p.drawString(100, 400, RoomType)
+    p.drawString(100, 380, RoomPrice)
+    p.drawString(100, 360, TotalRoom)
+    p.drawString(100, 340, TotalPrice)
+    p.drawString(100, 320, BookAmount)
+    p.drawString(100, 300, RestAmount)
+    p.drawString(100, 280, "This booking has been confirmed.")
     p.drawImage('./HotelFlight/static/booking/barcode.jpg', 400, 750, 6 * cm, 2 * cm)
+    p.drawImage('./HotelFlight/static/booking/logo.jpg', 100, 750, 2 * cm, 2 * cm)
     p.showPage()
     p.save()
     # create message object instance
@@ -168,8 +187,8 @@ def BookingConfirmationPage(request):
     msg['Subject'] = "Response to Hotel/Flight Booking"
     # add in the message body
     msg.attach(MIMEText(message, 'plain'))
-    filename = "ex.pdf"
-    attachment = open("./booking/pdfs/ex.pdf", "rb")
+    filename = "Itinerary.pdf"
+    attachment = open("./booking/pdfs/Itinerary.pdf", "rb")
     p = MIMEBase('application', 'octet-stream')
     p.set_payload((attachment).read())
     encoders.encode_base64(p)
@@ -179,42 +198,12 @@ def BookingConfirmationPage(request):
     server = smtplib.SMTP('smtp.gmail.com: 587')
     server.starttls()
     # Login Credentials for sending the mail
-    # server.login(msg['From'], password)
+    server.login(msg['From'], password)
     # send the message via the server.
-    # server.sendmail(msg['From'], msg['To'], msg.as_string())
-    # server.quit()
+    server.sendmail(msg['From'], msg['To'], msg.as_string())
+    server.quit()
     print("email sent")
-    msg = MIMEMultipart()
-    message = "Your reservation has been succesfully confirmed!  " \
-              "" \
-              "" \
-              "Room type:" + room[0].RoomType + "" \
-                                                " No of rooms:" + roomcount + "" \
-                                                                              "Check-in:" + checkin
 
-    # setup the parameters of the message
-    password = "proxierOSP"
-    msg['From'] = "onlineserviceprovider131625@gmail.com"
-    msg['To'] = Email
-    msg['Subject'] = "Hotel reservation on" + hotel[0].Hotel_Name + " hotel"
-    # add in the message body
-    msg.attach(MIMEText(message, 'plain'))
-    # filename = "query1.txt"
-    # attachment = open("./ReservationProject_Root/query1.txt", "rb")
-    # p = MIMEBase('application', 'octet-stream')
-    # p.set_payload((attachment).read())
-    # encoders.encode_base64(p)
-    # p.add_header('Content-Disposition', "attachment; filename= %s" % filename)
-    # msg.attach(p)
-    # create server
-    #server = smtplib.SMTP('smtp.gmail.com: 587')
-    #server.starttls()
-    # Login Credentials for sending the mail
-    #server.login(msg['From'], password)
-    # send the message via the server.
-    #server.sendmail(msg['From'], msg['To'], msg.as_string())
-    #server.quit()
-    #print("email sent")'''
     # setting initial values for room and adult
     hotelForm.fields['room'].initial = int(roomCount)
     hotelForm.fields['adult'].initial = int(adultCount)

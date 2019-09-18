@@ -36,7 +36,6 @@
                         <div class="sidebar-header">
                             <h3>Options</h3>
                         </div>
-
                         <ul class="list-unstyled components">
                             <p>Dashboard</p>
                             <li class="active">
@@ -92,10 +91,249 @@
                         </ul>
                     </nav>
                 </div>
-                <div class="col-lg-9">
+                <div class="col-lg-9" style="margin-top: 0px;">
+                    <div align="center" style="margin-bottom: 20px;margin-top: 0px;">
+                        <button class="button search_button" style="margin: 0px;" type="button" onclick="hotelClick()">
+                            Hotel
+                        </button>
+                        <button class="button search_button" style="margin: 0px;" type="button" onclick="flightClick()">
+                            Flight
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <canvas id="chartRev" height="200px;"></canvas>
+                        </div>
+                        <div class="col-lg-4">
+                            <canvas id="chartPie" height="300px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 50px;">
+                        <div class="col-lg-12">
+                            <canvas id="chartPayment"></canvas>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <canvas id="myChart3" style="display:none;" height="150px;"></canvas>
+                        </div>
+                        <div class="col-lg-4">
+                            <canvas id="myChart4" style="display:none;" height="300px;"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
 {% endblock content %}
+
+
+{% block jscript %}
+    <script src="{% static 'adminpanel/chart.js' %}"></script>
+    <script>
+        // hotel revinue
+        let yLabel = [];
+        let xLabel = [];
+        let color = [];
+        let myLabel = [];
+        let randR, randG, randB, temp;
+        {% for datum in dataHotelRev %}
+            xLabel.push('{{ datum.Checkin_Date }}');
+            yLabel.push({{ datum.TotalRevenue }});
+            randR = Math.floor((Math.random() * 130) + 70);
+            randG = Math.floor((Math.random() * 130) + 70);
+            randB = Math.floor((Math.random() * 130) + 70);
+            temp = "rgb(" + randR + ", " + randG + ", " + randB + ")";
+            color.push(temp);
+        {% endfor %}
+        let chartRev = document.getElementById('chartRev').getContext('2d');
+        let chartRevO = new Chart(chartRev, {
+            type: 'bar',
+            data: {
+                labels: xLabel,
+                datasets: [{
+                    //label: xLabel,
+                    backgroundColor: color,
+                    borderColor: color,
+                    data: yLabel
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'Revenue from hotel booking per day'
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+        // hotel payment
+        yLabel = [];
+        xLabel = [];
+        color = [];
+        myLabel = [];
+        {% for datum in dataPayment %}
+            xLabel.push('{{ datum.CheckinDate }}');
+            {% if datum.Flag == 1 %}
+                yLabel.push({{ datum.PaidMoney }});
+            {% else %}
+                yLabel.push(-{{ datum.MoneyToRefund }});
+            {% endif %}
+            randR = Math.floor((Math.random() * 130) + 70);
+            randG = Math.floor((Math.random() * 130) + 70);
+            randB = Math.floor((Math.random() * 130) + 70);
+            temp = "rgb(" + randR + ", " + randG + ", " + randB + ")";
+            color.push(temp);
+        {% endfor %}
+        let chartPayment = document.getElementById('chartPayment').getContext('2d');
+        let chartPaymentO = new Chart(chartPayment, {
+            type: 'bar',
+            data: {
+                labels: xLabel,
+                datasets: [{
+                    //label: xLabel,
+                    backgroundColor: color,
+                    borderColor: color,
+                    data: yLabel
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'Payment log'
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+        // hotel pie
+        yLabel = [];
+        xLabel = [];
+        color = [];
+        myLabel = [];
+        {% for datum in dataPie %}
+            yLabel.push('{{ datum.HotelName }}');
+            xLabel.push({{ datum.TotalRevenue }});
+            randR = Math.floor((Math.random() * 130) + 70);
+            randG = Math.floor((Math.random() * 130) + 70);
+            randB = Math.floor((Math.random() * 130) + 70);
+            temp = "rgb(" + randR + ", " + randG + ", " + randB + ")";
+            color.push(temp);
+        {% endfor %}
+        data = {
+            datasets: [{
+                data: xLabel,
+                backgroundColor: color
+            }],
+            labels: yLabel
+        };
+        let chartPie = document.getElementById('chartPie').getContext('2d');
+        let chartPieO = new Chart(chartPie, {
+            type: 'pie',
+            data: data,
+            options: {
+                title: {
+                    display: true,
+                    text: 'Revenue per room type'
+                }
+            }
+        });
+
+
+        /*FLIGHT GRAPHS*///////
+        /*Line Graph*/
+        var i;
+        var row3;
+        var yLabel3 = [];
+        var xLabel3 = [];
+        {% for row3 in data3 %}
+            yLabel3.push({{ row3.1 }});
+            xLabel3.push('{{ row3.2 }}');
+        {% endfor %}
+        var ctx3 = document.getElementById('myChart3').getContext('2d');
+        var chart3 = new Chart(ctx3, {
+            // The type of chart we want to create
+            type: 'line',
+            // The data for our dataset
+            data: {
+                //labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                labels: xLabel3,
+                datasets: [{
+                    label: 'Revenue from flight booking per day',
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    //data: [0, 10, 5, 2, 20, 30, 45]
+                    data: yLabel3
+                }]
+            },
+            // Configuration options go here
+            options: {}
+        });
+        /*Pie Graph*/
+        var row4;
+        var yLabel4 = [];
+        var xLabel4 = [];
+        {% for row4 in data4 %}
+            yLabel4.push({{ row4.1 }});
+            xLabel4.push('{{ row4.2 }}');
+            temp = 150 - i * 20;
+            //var temp2 = 'rgb(' + str(temp) + ', ' + str(temp) + ', 255),';
+            //color.push(temp2);
+            i = i + 1;
+        {% endfor %}
+        data = {
+            datasets: [{
+                //data: [10, 20, 30],
+                data: yLabel4,
+                backgroundColor: ['rgb(255, 120, 150)', 'rgb(255, 90, 120)',]
+                //backgroundColor: color
+            }],
+            // These labels appear in the legend and in the tooltips when hovering different arcs
+            labels: xLabel4
+        };
+        var ctx4 = document.getElementById('myChart4').getContext('2d');
+        var myPieChart4 = new Chart(ctx4, {
+            type: 'pie',
+            data: data
+        });
+        let input1 = document.getElementById('chartPie');
+        let input2 = document.getElementById('chartRev');
+        let input5 = document.getElementById('chartPayment');
+        let input3 = document.getElementById('myChart3');
+        let input4 = document.getElementById('myChart4');
+
+        //input3.style.display="none";
+        function hotelClick() {
+            input1.style.display = "";
+            input2.style.display = "";
+            input5.style.display = "";
+            input3.style.display = "none";
+            input4.style.display = "none";
+        }
+
+        function flightClick() {
+            input1.style.display = "none";
+            input2.style.display = "none";
+            input5.style.display = "none";
+            input3.style.display = "";
+            input4.style.display = "";
+        }
+    </script>
+{% endblock jscript %}

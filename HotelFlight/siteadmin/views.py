@@ -13,6 +13,46 @@ def namedtuplefetchall(cursor):
 
 
 def admindash(request):
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT count(B.id) as 'TotalBooking', sum(HR.Price)*.05 as 'TotalRevenue' , B.DateOfBooking as 'Date',HB.Checkin_Date "
+        "FROM database_booking B JOIN database_hotel_booking HB ON B.id=HB.Booking_id JOIN database_hotel_room HR "
+        "ON HB.Hotel_Room_id=HR.id GROUP BY HB.Checkin_Date")
+    dataHotelRev = namedtuplefetchall(cursor)
+    cursor.execute(
+        "SELECT AU.first_name || ' '|| AU.last_name as 'name' , PR.Phone as 'phn', PR.Address as 'addr', "
+        "AU.email as 'mail',PL.Flag,H.Hotel_Name as Hotel_Name,R.RoomType as RoomType,HR.Price as UnitPrice,"
+        "B.MoneyToPay as MoneyToPay,B.MoneyToRefund as MoneyToRefund,B.PaidMoney as PaidMoney,B.DateOfBooking "
+        "as DOB,HB.Checkin_Date as CheckinDate,HB.Checkout_Date as CheckoutDate,HB.TotalRooms as TotalRooms FROM "
+        "database_payment_log PL JOIN database_booking B ON (PL.booking_id = B.id) JOIN database_hotel_booking HB "
+        "ON(HB.Booking_id = B.id) JOIN database_hotel_room HR ON (HB.Hotel_Room_id = HR.id) "
+        "JOIN database_hotel H ON (H.id = HR.Hotel_id) JOIN database_room R ON (R.id = HR.Room_id) "
+        "JOIN auth_user AU on (B.User_id=AU.id) JOIN database_profile PR ON (PR.user_id = AU.id) "
+        " WHERE PL.Admin_id=%s", [request.user.id])
+    dataPayment = namedtuplefetchall(cursor)
+    cursor.execute(
+        "SELECT count(B.id) as 'TotalBooking', sum(HR.Price)*.05 as 'TotalRevenue' , H.Hotel_Name as 'HotelName' "
+        "FROM database_booking B JOIN database_hotel_booking HB ON B.id=HB.Booking_id "
+        "JOIN database_hotel_room HR ON HB.Hotel_Room_id=HR.id "
+        "JOIN database_hotel H ON HR.Hotel_id=H.id "
+        "GROUP BY H.id ORDER BY sum(HR.Price) ")
+    dataPie = namedtuplefetchall(cursor)
+    cursor.execute(
+        "SELECT count(B.id) as 'TotalBooking', sum(FR.Price)*.05 as 'TotalRevenue' , B.DateOfBooking as 'Date' "
+        "FROM database_booking B JOIN database_flight_booking FB ON B.id=FB.Booking_id "
+        "JOIN database_flight_route FR ON FB.Flight_id=FR.id "
+        "GROUP BY B.DateOfBooking")
+    results3 = cursor.fetchall()
+    cursor.execute(
+        "SELECT count(B.id) as 'TotalBooking', sum(FR.Price)*.05 as 'TotalRevenue' , AC.AirCompany_Name as 'CompanyName' "
+        "FROM database_booking B JOIN database_flight_booking FB ON B.id=FB.Booking_id "
+        "JOIN database_flight_route FR ON FB.Flight_id=FR.id "
+        "JOIN database_flight F ON FR.Flight_id=F.id "
+        "JOIN database_air_company AC ON F.AirCompany_id=AC.id "
+        "GROUP BY AC.id "
+        "ORDER BY sum(FR.Price)")
+    results4 = cursor.fetchall()
+
     # notification count
     cursor = connection.cursor()
     cursor.execute("select count(*) as cnt from database_hotel_booking HB join database_booking B on "
@@ -29,7 +69,9 @@ def admindash(request):
     flightCancelCount = namedtuplefetchall(cursor)[0].cnt
     return render(request, "siteadmin/AdminDash.html",
                   {'hotelApproveCount': hotelApproveCount, 'hotelCancelCount': hotelCancelCount,
-                   'flightApproveCount': flightApproveCount, 'flightCancelCount': flightCancelCount})
+                   'flightApproveCount': flightApproveCount, 'flightCancelCount': flightCancelCount,
+                   'dataHotelRev': dataHotelRev, 'dataPayment': dataPayment,
+                   'dataPie': dataPie, 'data3': results3, 'data4': results4})
 
 
 def viewHotels(request):

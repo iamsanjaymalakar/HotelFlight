@@ -198,7 +198,7 @@ def userflightbookings(request):
         "database_flight_booking FB JOIN database_booking B ON (FB.Booking_id=B.id) JOIN database_flight_route FR ON "
         "(FB.Flight_id = FR.id) JOIN database_flight F ON (FR.Flight_id = F.id) JOIN database_air_company A ON "
         "(F.AirCompany_id = A.id) JOIN database_cancellation_policy CP ON (CP.id = FR.Cancellation_Policy_id) JOIN "
-        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and B.Status=0 and "
+        "database_route R ON (R.id = FR.Route_id) WHERE B.User_id = %s and B.Status<>2 and "
         "DATETIME(B.DateOfBooking,datestr)>=date('now') order by B.DateOfBooking,FR.Date", [request.user.id])
     data = namedtuplefetchall(cursor)
     # notifications count
