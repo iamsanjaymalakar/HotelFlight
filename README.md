@@ -1,10 +1,15 @@
 # HotelFlight
 A web based hotel and flight booking application
 
+# Demo
+[https://iamsanjaymalakar.github.io/HotelFlight/](https://iamsanjaymalakar.github.io/HotelFlight/ "HotelFlight")
+
+
+
 ## Installation guide 
   * Install __Python__ and __PIP__
   * Clone the repository
-    * ```git clone https://github.com/iamsanjaymalakar/MyHotelFlight.git```
+    * ```git clone https://github.com/iamsanjaymalakar/HotelFlight.git```
   * Enter cloned folder
     * ```cd MyHotelFlight```
   * Setup a virtual environment
