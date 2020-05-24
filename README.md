@@ -15,7 +15,7 @@ A web based hotel and flight booking application
     * Windows
       * ```venv\scripts\activate``` 
   * Install the required packages
-    * ```pip install -r requirment.txt```
+    * ```pip install -r requirements.txt```
   * Run the server
     * ```cd HotelFlight```
     * ```python3 manage.py runserver```
