@@ -1,4 +1,4 @@
-# MyHotelFlight
+# HotelFlight
 A web based hotel and flight booking application
 
 ## Installation guide 
