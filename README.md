@@ -1,6 +1,9 @@
 # HotelFlight
 A web based hotel and flight booking application
 
+# Framework
+Django
+
 # Demo
 [https://iamsanjaymalakar.github.io/HotelFlight/](https://iamsanjaymalakar.github.io/HotelFlight/ "HotelFlight")
 
@@ -11,7 +14,7 @@ A web based hotel and flight booking application
   * Clone the repository
     * ```git clone https://github.com/iamsanjaymalakar/HotelFlight.git```
   * Enter cloned folder
-    * ```cd MyHotelFlight```
+    * ```cd HotelFlight```
   * Setup a virtual environment
     * ```virtualenv venv```
   * Activate the virtual environment
