@@ -5,7 +5,7 @@ django-easy-maps==1.0.2
 django-widget-tweaks==1.4.5
 geographiclib==1.49
 geopy==1.20.0
-Pillow==6.1.0
+Pillow==9.3.0
 pytz==2019.1
 reportlab==3.5.23
 six==1.12.0
